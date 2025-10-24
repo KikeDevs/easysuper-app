@@ -1,2 +1,70 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
+@import "tailwindcss";
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+p,h1,h2,h3,h4,h5,h6 {
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-light: #f5f5f5;
+    --bg-dark: #121212;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+.no-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+html:not(.dark){
+    --ion-background-color: var(--bg-light);
+}
+html.dark{
+    --bg-dark: #121212;
+    --ion-background-color: var(--bg-dark);
+}
+
+
+.md .md-toolbar-dark {
+    --background: var(--bg-dark) !important;
+    --ion-background-color: var(--bg-dark) !important;
+}
+
+.font-bold{
+    font-weight: bold;
+}
+
+.md .md-toolbar {
+    --padding-top: 32px;
+}
+
+.md .padding-bottom {
+    --padding-bottom: 10px;
+}
+
+.ios .ios-toolbar {
+    --padding-top: 15px;
+}
+
+ion-list, ion-item {
+    --background: transparent;
+    --ion-item-background: transparent;
+}
+
+.ios .ios-toast {
+    --margin-top: 15px;
+}
+
+.md .md-modal {
+    --height: 38%;
+    --border-radius: 12px;
+}
+
+.md .md-toast {
+    --margin-top: 32px;
+}

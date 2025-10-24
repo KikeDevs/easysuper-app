@@ -1,11 +1,15 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router';
-
-import { IonicVue } from '@ionic/vue';
+import { createApp } from "vue";
+import {createPinia, setActivePinia} from "pinia";
+import App from "./App.vue";
+import router from "./router/router";
+import { IonicVue } from "@ionic/vue";
+import { useAuthStore } from "@/stores/auth";
+import { wireApiAuth } from "@/services/api";
+import { installGuards } from "@/router/guard";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
+import '@flaticon/flaticon-uicons/css/regular/rounded.css'
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -20,24 +24,39 @@ import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import '@ionic/vue/css/palettes/dark.always.css'; */
-/* @import '@ionic/vue/css/palettes/dark.class.css'; */
 import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+async function bootstrap() {
+    const app = createApp(App);
+    const pinia = createPinia();
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+    app.use(IonicVue);
+    app.use(pinia);
+    app.use(router);
 
-router.isReady().then(() => {
-  app.mount('#app');
-});
+    const auth = useAuthStore();
+
+    // 1) Cargar sesión desde Preferences (nativo)
+    await auth.loadFromPreferences();
+
+    setActivePinia(pinia);
+    // 2) Interceptor que leerá el token del store
+    wireApiAuth();
+
+    // 3) Guards (ya pueden leer auth)
+    installGuards(router);
+
+    // 4) Listo el enrutador
+    await router.isReady();
+
+    // 5) Si ya hay sesión, salta login
+    if (auth.isLogged && router.currentRoute.value.path === "/") {
+        await router.replace("/users"); // o tu home
+    }
+
+    app.mount("#app");
+}
+
+bootstrap();
