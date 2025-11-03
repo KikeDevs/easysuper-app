@@ -87,9 +87,9 @@ function goRecuperar(): void {
 </script>
 
 <template>
-  <ion-page :fullscreen="true">
+  <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="md-toolbar">
+      <toolbar-custom class="px-2">
         <template #start>
           <ion-back-button/>
         </template>
@@ -113,6 +113,7 @@ function goRecuperar(): void {
                   v-model="User.email"
                   icon_primary="envelope"
                   placeholder="Email"
+                  tipo="email"
                   @keyup.enter="inUser"
               />
             </input-container>

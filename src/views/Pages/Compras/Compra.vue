@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import {IonPage, IonContent, IonHeader, IonTitle, IonBackButton, IonFooter, IonToast} from "@ionic/vue";
-import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
+import {IonPage, IonContent, IonHeader, IonTitle, IonBackButton, IonFooter, IonToast, onIonViewDidEnter, onIonViewWillLeave} from "@ionic/vue";
 import {computed, ref, watch} from "vue";
-import {onIonViewDidEnter, onIonViewWillLeave} from "@ionic/vue";
-import {Departamento, ProductList} from "@/types/types";
+import router from "@/router/router";
+
+import {ProductList} from "@/interfaces/products";
+import {Departamento} from "@/interfaces/types";
+
 import {getListDetails} from "@/api/Lists";
-import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
-import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import {getDepartaments} from "@/api/Productos";
 import {productComprado, terminadaCompra, terminarCompra} from "@/api/Compras";
-import {useProfileStore} from "@/stores/profile";
+
 import {colorFromTextStable} from "@/utils/colorFromText";
+import {useProfileStore} from "@/stores/profile";
+
+import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
+import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
+import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import router from "@/router/router";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 
 const props = defineProps<{
   userlistId: number;
@@ -22,6 +27,7 @@ const props = defineProps<{
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
 
+const initialLoading = ref(true);
 const compraTerminada = ref<boolean>(false);
 const showFinalizadaModal = ref(false);
 const terminarCompraModal = ref(false);
@@ -75,8 +81,13 @@ function irAHome() {
 
 // Lifecycles correctos para páginas Ionic
 onIonViewDidEnter(async () => {
-  await Promise.all([getMiListDetails(), obDepartamentos()]);
-  startPolling();
+  initialLoading.value = true;
+  try {
+    await Promise.all([getMiListDetails(), obDepartamentos()]);
+    startPolling();
+  } finally {
+    initialLoading.value = false;
+  }
 });
 
 onIonViewWillLeave(() => {
@@ -158,7 +169,7 @@ const grupos = computed<Group[]>(() => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="pr-3 md-toolbar">
+      <toolbar-custom class="px-2">
         <ion-title> Compra Lista {{ nameList }}</ion-title>
         <template #start>
           <ion-back-button/>
@@ -246,9 +257,11 @@ const grupos = computed<Group[]>(() => {
           @didDismiss="toast.show = false"
       />
 
+      <loader-normal :open="initialLoading"/>
+
     </ion-content>
 
-    <ion-footer class="ion-no-border">
+    <ion-footer class="ion-no-border mb-8">
       <div class="px-3 py-1">
         <btn-primary shape="round"
                      size="large"

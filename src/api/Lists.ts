@@ -1,4 +1,4 @@
-import {ListReboot, miList, ProductList} from "@/types/types";
+import {ListReboot, miList, ProductList} from "@/interfaces/types";
 import {api} from "@/services/api";
 import {userPerfiles} from "@/api/UserProfiles";
 import {useProfileStore} from "@/stores/profile";

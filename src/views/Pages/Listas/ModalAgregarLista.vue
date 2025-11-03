@@ -3,6 +3,7 @@ import IconCustom from "@/views/Components/IconCustom.vue";
 import {IonContent, IonModal} from "@ionic/vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import {ref} from "vue";
+import {Keyboard} from "@capacitor/keyboard";
 
 
 const isOpen = defineModel<boolean>('is-open',{default: false});
@@ -14,6 +15,11 @@ function focusNameList(): void {
     setTimeout(() => nameList.value?.focus(),0)
   })
 }
+function onDone(): void {
+  nameList.value?.blur();
+  Keyboard.hide();
+}
+
 
 const emit = defineEmits<{
   (e: 'agregar'): void;
@@ -30,17 +36,22 @@ const emit = defineEmits<{
       class="add-list"
   >
     <ion-content>
-      <div class="flex items-center px-3 pt-2 pb-1 border-b-1 border-gray-700">
+      <div class="flex items-center px-3 pt-2 pb-1">
         <p class="text-lg font-bold flex-1">Agregar lista</p>
-        <icon-custom icon="cross" @click="isOpen = false"/>
+        <icon-custom icon="cross-small" @click="isOpen = false"/>
       </div>
 
       <div class="w-full p-3 flex flex-col gap-5 justify-center items-center">
         <div class="rounded-full flex w-full px-3 items-center gap-2 dark:bg-[#2a2a2a] not-dark:bg-gray-200">
           <div class="flex items-center">
             <icon-custom icon="document-signed" />
-            <input ref="nameList" v-model="textInput" type="text" placeholder="Nombre de la lista"
-                   class="flex-1 w-full p-2 focus:outline-none focus:ring-0">
+            <input ref="nameList"
+                   v-model="textInput"
+                   type="text"
+                   placeholder="Nombre de la lista"
+                   class="flex-1 w-full p-2 focus:outline-none focus:ring-0"
+                   @keyup.enter="onDone"
+            >
           </div>
         </div>
         <div class="flex-1 flex w-full h-full">
@@ -49,7 +60,6 @@ const emit = defineEmits<{
           </btn-primary>
         </div>
       </div>
-
     </ion-content>
   </ion-modal>
 

@@ -1,23 +1,28 @@
 <script setup lang="ts">
 import {
   IonPage, IonHeader, IonTitle, IonBackButton, IonContent, IonToast, IonRefresherContent, IonRefresher,
+  onIonViewDidEnter,
 } from "@ionic/vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
 import ModalProductosLista from "@/views/Pages/Listas/ModalProductosLista.vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
 
-import {Departamento, ProductList} from "@/types/types";
+import {ProductList} from "@/interfaces/products";
+import {Departamento} from "@/interfaces/types";
 import { getListDetails } from "@/api/Lists";
 import {deleteProduct, getDepartaments} from "@/api/Productos";
 import { colorFromTextStable } from "@/utils/colorFromText";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 
 const props = defineProps<{
   listId: number,
   nameList: string,
 }>();
+
+const initialLoading = ref(false);
 
 const showSearch = ref(false);
 const toast = ref({ show: false, message: "" });
@@ -56,9 +61,14 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
   }
 }
 
-onMounted(async () => {
-  await Promise.all([getProductosLista(), obDepartamentos()]);
-});
+onIonViewDidEnter(async () => {
+  initialLoading.value = true;
+  try {
+    await Promise.all([getProductosLista(), obDepartamentos()]);
+  } finally {
+    initialLoading.value = false;
+  }
+})
 
 const deptNameById = computed<Map<number, string>>(() => {
   const m = new Map<number, string>();
@@ -93,7 +103,7 @@ const grupos = computed<Group[]>(() => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="md-toolbar pr-3">
+      <toolbar-custom class="px-2">
         <ion-title>Lista {{ nameList }}</ion-title>
         <template #start>
           <ion-back-button/>
@@ -136,17 +146,20 @@ const grupos = computed<Group[]>(() => {
           </div>
         </item-producto-lista>
       </div>
-      <div class="h-16"/>
+      <div class="h-20"/>
       <ion-toast
           :is-open="toast.show"
           :duration="3000"
           @didDismiss="toast.show = false"
           :message="toast.message"
       />
+
+      <loader-normal :open="initialLoading"/>
+
     </ion-content>
 
     <!-- Botón agregar -->
-    <div class="fixed z-10 bottom-4 right-4 flex justify-center">
+    <div class="fixed z-10 bottom-10 right-4 flex justify-center">
       <btn-primary
           shape="round"
           size="large"

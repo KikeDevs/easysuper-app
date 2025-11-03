@@ -29,10 +29,8 @@ html.dark{
     --ion-background-color: var(--bg-dark);
 }
 
-
-.md .md-toolbar-dark {
-    --background: var(--bg-dark) !important;
-    --ion-background-color: var(--bg-dark) !important;
+.page-content {
+    padding-top: var(--ion-safe-area-top) !important;
 }
 
 .font-bold{
@@ -55,7 +53,6 @@ ion-list, ion-item {
     --background: transparent;
     --ion-item-background: transparent;
 }
-
 .ios .ios-toast {
     --margin-top: 15px;
 }
@@ -67,4 +64,8 @@ ion-list, ion-item {
 
 .md .md-toast {
     --margin-top: 32px;
+}
+
+ion-toast{
+    --border-radius: 20px;
 }

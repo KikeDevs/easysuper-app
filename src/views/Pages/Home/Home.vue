@@ -1,50 +1,99 @@
 <script setup lang="ts">
 import {
-  IonPage, IonAvatar, IonHeader, IonTitle, IonContent,
-  IonToast, IonRippleEffect
+  IonPage,
+  IonAvatar,
+  IonHeader,
+  IonTitle,
+  IonContent,
+  IonToast,
+  IonRippleEffect,
 } from "@ionic/vue";
-import { getSaludo } from "@/utils/saludo";
+
+import { App as CapacitorApp } from "@capacitor/app";
+import { onMounted, onBeforeUnmount, computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import {computed, ref} from "vue";
+
+import { getSaludo } from "@/utils/saludo";
+import { useProfileStore } from "@/stores/profile";
+import { colorFromTextStable } from "@/utils/colorFromText";
+
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
-import InputContainer from "@/views/Components/InputContainer.vue";
-import InputCustom from "@/views/Components/InputCustom.vue";
 import CardCustom from "@/views/Components/CardCustom.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {useProfileStore} from "@/stores/profile";
-import {colorFromTextStable} from "@/utils/colorFromText";
 import ModalIniciarCompra from "@/views/Pages/Compras/ModalIniciarCompra.vue";
+import ModalProductosHome from "@/views/Pages/Home/ModalProductosHome.vue";
 
+// -------- estado existente --------
 const saludo = getSaludo();
 const router = useRouter();
+const profileStore = useProfileStore();
 
-const buscar = ref('');
+const canSeeOfertas = computed(() => profileStore.locationGranted);
 
-function goConfigs(): void { router.push('configs') }
-function goListas(): void { router.push('listas'); }
-function goOfertas(): void { router.push('ofertas') }
+const showBuscar = ref<boolean>(false);
 
-// Toast
-const showToast = ref({ show: false, message: "", color: "danger" })
-function openToast(message: string, color: string = 'danger'): void {
-  showToast.value.show = true
-  showToast.value.message = message
-  showToast.value.color = color
+const toast = ref({ show: false, message: "" });
+function showToast(message: string) {
+  toast.value.message = message;
+  toast.value.show = true;
 }
 
-const bg = computed(() => colorFromTextStable(useProfileStore().selected?.name_perfil ?? ''));
+function goConfigs(): void { router.push("configs"); }
+function goListas(): void { router.push("listas"); }
+function goOfertas(): void {
+  if (canSeeOfertas.value) router.push("ofertas");
+  else showToast("Sin la ubicacion no puede ver ofertas.");
+}
+
+const bg = computed(() =>
+    colorFromTextStable(profileStore.selected?.name_perfil ?? "")
+);
 
 const modalIniciar = ref<boolean>(false);
 function closeModal(): void {
   modalIniciar.value = false;
 }
 
+// -------- DOBLE BACK PARA SALIR --------
+let lastBackTime = 0;
+let backListener: { remove: () => void } | null = null;
+
+onMounted(async () => {
+  backListener = await CapacitorApp.addListener("backButton", ({canGoBack}) => {
+    // canGoBack lo da Capacitor en Android:
+    // true  -> hay historial para hacer pop (pantalla interna)
+    // false -> es la raíz, normalmente saldría de la app
+
+   if (canGoBack) {
+      // estamos en una subpantalla (por ejemplo entraste a configs, listas, etc.)
+      // deja que navegue para atrás normal
+      //router.back();
+      return;
+    }
+
+    // estamos en la pantalla raíz (Home). Aquí hacemos doble tap para salir.
+    const now = Date.now();
+    if (now - lastBackTime < 1000) {
+      CapacitorApp.exitApp();
+      return;
+    }
+
+    lastBackTime = now;
+  });
+});
+
+onBeforeUnmount(() => {
+  if (backListener) {
+    backListener.remove();
+    backListener = null;
+  }
+});
 </script>
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border" id="header">
-      <toolbar-custom class="px-3 md-toolbar padding-bottom">
+    <ion-header class="ion-no-border" id="header" :translucent="true">
+      <toolbar-custom class="px-2 padding-bottom">
         <ion-title>
           <div class="flex items-center gap-0.5">
             <img class="w-9 h-9" src="/assets/logo.png" alt="logo"/>
@@ -64,28 +113,27 @@ function closeModal(): void {
       </toolbar-custom>
     </ion-header>
 
-    <!-- IMPORTANTE: dejamos scroll-y=false y hacemos scroll en la lista -->
-    <ion-content ref="contentRef" :fullscreen="true" :scroll-y="false" class="ion-padding">
+    <ion-content :scroll-y="false" :fullscreen="true" class="ion-padding">
       <div class="w-full h-full flex flex-col gap-5">
 
-        <input-container class="not-dark:border-2 not-dark:border-blue-400">
-          <input-custom
-              v-model="buscar"
-              icon_primary="search"
-              placeholder="Buscar"
-              :icon_secondary="buscar !== '' ? 'cross-small':''"
-              @click="buscar = '';"
-              @update:modelValue=""
-              class="not-dark:text-blue-500"
-          />
-        </input-container>
+        <!-- Buscador -->
+        <div class="border-1 border-blue-400 rounded-full flex gap-1 items-center pl-2 dark:bg-[#2a2a2a] dark:border-[#2a2a2a]" @click="showBuscar = true">
+          <icon-custom icon="search" size="xl" class="text-blue-400 dark:text-white"/>
+          <div class="py-2 px-1 flex items-center">
+            <p>Buscar Productos...</p>
+          </div>
+        </div>
 
         <!-- Portada -->
         <div class="flex-1 w-full h-full flex flex-col gap-5 justify-center">
           <div>
-            <h4 class="tracking-wide">¡Hola <span class="font-bold text-blue-600 dark:text-white">{{useProfileStore().selected?.name_perfil}}</span>!</h4>
-            <p>{{saludo}}</p>
+            <h4 class="tracking-wide">
+              ¡Hola
+              <span class="font-bold text-blue-600 dark:text-white">{{ profileStore.selected?.name_perfil ?? '' }}</span>!
+            </h4>
+            <p>{{ saludo }}</p>
           </div>
+
           <card-custom class="h-40 not-dark:bg-gray-50 relative" :ripple="true" @click="goListas">
             <div class="absolute inset-0">
               <img class="w-full h-full" src="/assets/images/home/Mis-Listas-2.png">
@@ -95,9 +143,11 @@ function closeModal(): void {
               <p class="w-3/5 leading-4 text-sm">Gestionar tus listas y agregar productos</p>
             </div>
           </card-custom>
-          <card-custom class="h-24 bg-blue-400 text-white dark:bg-blue-400 relative"
-                       :ripple="true"
-                       @click="() => modalIniciar = true"
+
+          <card-custom
+              class="h-24 bg-blue-400 text-white dark:bg-blue-400 relative"
+              :ripple="true"
+              @click="() => modalIniciar = true"
           >
             <div class="absolute inset-0">
               <img src="/assets/images/home/Iniciar-Compra-2.png">
@@ -107,7 +157,13 @@ function closeModal(): void {
               <p class="text-3xl tracking-wide font-bold">COMPRA</p>
             </div>
           </card-custom>
-          <card-custom class="h-24 bg-fuchsia-700 text-white dark:bg-fuchsia-700 relative" :ripple="true" @click="goOfertas">
+
+          <card-custom
+              class="h-24 bg-fuchsia-700 text-white dark:bg-fuchsia-700 relative"
+              :class="[canSeeOfertas ? '' : 'opacity-40']"
+              :ripple="true"
+              @click="goOfertas"
+          >
             <div class="py-3 px-5 flex flex-col justify-center h-full">
               <p class="text-3xl font-bold tracking-wide">OFERTAS</p>
             </div>
@@ -116,8 +172,12 @@ function closeModal(): void {
             </div>
           </card-custom>
         </div>
-
       </div>
+
+      <modal-productos-home
+          v-model:is-open="showBuscar"
+          @close="showBuscar = false"
+      />
 
       <modal-iniciar-compra
           v-model:is-open="modalIniciar"
@@ -125,15 +185,12 @@ function closeModal(): void {
       />
 
       <ion-toast
-          :is-open="showToast.show"
-          :message="showToast.message"
-          :color="showToast.color"
-          :duration="3000"
+          :is-open="toast.show"
+          :duration="2000"
+          :message="toast.message"
           position="bottom"
-          position-anchor="header"
-          @didDismiss="showToast.show = false"
+          @didDismiss="toast.show = false"
       />
     </ion-content>
   </ion-page>
 </template>
-

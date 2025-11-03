@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonAvatar, IonRippleEffect } from "@ionic/vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {Profile} from "@/types/types";
+import {Profile} from "@/interfaces/types";
 import {computed} from "vue";
 import {colorFromTextStable, readableTextColor} from "@/utils/colorFromText";
 

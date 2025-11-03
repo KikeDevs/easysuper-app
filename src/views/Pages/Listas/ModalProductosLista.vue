@@ -6,8 +6,10 @@ import {
 import IconCustom from "@/views/Components/IconCustom.vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import {ref, watch} from "vue";
-import {Departamento, Product} from "@/types/types";
-import {addProduct, getDepartaments, getProducts} from "@/api/Productos";
+
+import {Product} from "@/interfaces/products";
+import {Departamento} from "@/interfaces/types";
+import {addProduct, getProducts} from "@/api/Productos";
 import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
 import {useProfileStore} from "@/stores/profile";
 
@@ -201,5 +203,4 @@ watch(isOpen, async (open) => {
 </template>
 
 <style scoped>
-
 </style>

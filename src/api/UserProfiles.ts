@@ -1,4 +1,4 @@
-import {Profile} from "@/types/types";
+import {Profile} from "@/interfaces/types";
 import {api} from "@/services/api";
 
 interface ProfilesResponse {
@@ -40,6 +40,20 @@ export async function addPerfil(namePerfil: string): Promise<actionPerfilRespons
 export async function edittPerfil(perfilId: number | null, namePerfil: string): Promise<actionPerfilResponse> {
     try {
         const resp = await api.post('edit-perfil',{perfil_id:perfilId, name_perfil:namePerfil});
+        return resp.data;
+    } catch (error: any) {
+        const message = error?.response?.data?.message
+        ?? error?.message
+        ?? "Error de red al registrar";
+        return { status: "error", message };
+    }
+}
+
+export async function deletePerfil(perfilId: number){
+    try {
+        const resp = await api.post<actionPerfilResponse>('delete-perfil',{
+            profile_id:perfilId
+        });
         return resp.data;
     } catch (error: any) {
         const message = error?.response?.data?.message

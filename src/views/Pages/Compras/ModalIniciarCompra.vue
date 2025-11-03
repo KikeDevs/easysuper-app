@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {IonModal,IonContent} from "@ionic/vue";
 
-import {miList} from "@/types/types";
+import {miList} from "@/interfaces/types";
 import {ref, watch} from "vue";
 import {misList} from "@/api/Lists";
 import {colorFromTextStable, readableTextColor} from "@/utils/colorFromText";

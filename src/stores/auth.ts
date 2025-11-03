@@ -2,7 +2,8 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 import { Preferences } from "@capacitor/preferences";
-import type { UserLite } from "@/types/types";
+import type { UserLite } from "@/interfaces/types";
+import {useProfileStore} from "@/stores/profile";
 
 const TOKEN_KEY = "auth.token";
 const USER_KEY  = "auth.user";
@@ -42,5 +43,11 @@ export const useAuthStore = defineStore("auth", {
             await Preferences.remove({ key: TOKEN_KEY });
             await Preferences.remove({ key: USER_KEY });
         },
+        async logoutAndReset() {
+            await this.logout();
+
+            const profile = useProfileStore();
+            profile.$reset();
+        }
     },
 });

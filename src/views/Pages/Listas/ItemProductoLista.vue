@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {Product, ProductList} from "@/types/types";
+import {Product, ProductList} from "@/interfaces/types";
 import {computed} from "vue";
 
 const props = defineProps<{

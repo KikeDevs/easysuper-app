@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import { RegisterResponse } from "@/types/types";
+import { RegisterResponse } from "@/interfaces/types";
 import {getDeviceName} from "@/utils/getDevice";
 
 export async function addUser(map: {

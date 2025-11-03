@@ -1,23 +1,27 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, IonRippleEffect,
-  IonModal, IonAvatar, IonToast, IonRefresher, IonRefresherContent
+  IonPage, IonContent, IonRippleEffect, IonFooter,
+  IonModal, IonAvatar, IonToast, IonRefresher, IonRefresherContent, onIonViewDidEnter
 } from '@ionic/vue';
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {computed, onMounted, ref} from "vue";
-import {Profile} from "@/types/types";
+import {computed, ref} from "vue";
+import {Profile} from "@/interfaces/types";
 import {addPerfil, edittPerfil, userPerfiles} from "@/api/UserProfiles";
 import ItemUser from "@/views/Components/ItemUser.vue";
 import {useProfileStore} from "@/stores/profile";
 import router from "@/router/router";
 import {colorFromTextStable} from "@/utils/colorFromText";
 
+import { verificarPermisoUbicacion } from "@/utils/ubicacionPermisos";
+import {Keyboard} from "@capacitor/keyboard";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+
+const initialLoading = ref(false);
 
 const toast = ref({ show: false, message: "" });
 function showToast(message: string) {
   toast.value.message = message;
-  toast.value.show = true;
 }
 
 const namePerfil = ref<HTMLInputElement | null>(null);
@@ -25,6 +29,10 @@ function focusNamePerfil(): void {
   requestAnimationFrame(() => {
     setTimeout(() => namePerfil.value?.focus(),0)
   })
+}
+function onDone(): void {
+  namePerfil.value?.blur();
+  Keyboard.hide();
 }
 
 const editPerfil = ref({
@@ -38,7 +46,6 @@ const showModalPerfil = ref({
   tipo: 'agregar',
   img: '',
   username: ''
-
 });
 
 const itemPerfil = ref<Profile | null>(null);
@@ -75,7 +82,7 @@ function editarPerfiles(): void {
   } else {
     editPerfil.value = {
       edit: true,
-      icon: 'cross-small',
+      icon: 'cross',
       text: 'Listo'
     }
   }
@@ -92,15 +99,42 @@ async function userProfiles(): Promise<void> {
   if (resp.status === "error"){
     showToast(resp.message);
   }
-
 }
-function onSelectProfile(p: Profile): void {
+
+// 👇 NUEVO: estado del permiso de ubicación
+const locationGranted = ref<boolean>(false);
+
+async function checkLocationPermiso(): Promise<void> {
+  const granted = await verificarPermisoUbicacion();
+  locationGranted.value = granted;
+
+  if (!granted) {
+    // Podemos avisar: "sin ubicación no hay ofertas cercanas"
+    showToast("No diste permiso de ubicación. No podrás ver ofertas cercanas.");
+  }
+}
+
+async function onSelectProfile(p: Profile): Promise<void> {
+  // aquí igual podríamos volver a checar por si cambió
+  if (!locationGranted.value) {
+    // opcional: puedes volver a intentar pedir permiso cuando escoge perfil
+    const granted = await verificarPermisoUbicacion();
+    locationGranted.value = granted;
+    if (!granted) {
+      // no bloqueamos elegir perfil ni ir al home,
+      // solo avisamos otra vez
+      showToast("Ubicación desactivada. Ofertas cercanas estarán bloqueadas.");
+    }
+  }
+
   useProfileStore().select(p);
-  router.replace('/home');
+  // podrías mandar también el flag al store:
+  useProfileStore().setLocationGranted?.(locationGranted.value);
+
+  await router.replace('/home');
 }
 
 const bg = computed(() => colorFromTextStable(showModalPerfil.value.username));
-
 
 async function agregarPerfil(): Promise<void> {
   const resp = await addPerfil(showModalPerfil.value.username);
@@ -140,11 +174,16 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
 }
 
 
-onMounted(() => {
-  userProfiles();
-})
-
+onIonViewDidEnter(async () => {
+  initialLoading.value = true;
+  try {
+    await Promise.all([checkLocationPermiso(),userProfiles()])
+  } finally {
+    initialLoading.value = false;
+  }
+});
 </script>
+
 
 <template>
   <ion-page>
@@ -169,30 +208,21 @@ onMounted(() => {
         </div>
 
         <!--Recargar metodo userProfiles con un reload como en las apps?-->
-        <div class="w-full h-full flex-1 flex items-end overflow-y-auto min-h-0">
+        <div class="w-full h-full flex-1 flex items-end">
           <div class="w-full grid grid-cols-2 gap-2">
             <item-user v-for="(s,i) in Profiles" :key="i" :profile="s"
                        :edit="editPerfil.edit"
                        @edit="openModalPerfil('editar', s)"
                        @select="onSelectProfile(s)"/>
+
+            <div v-if="!(Profiles.length > 11)" class="w-full h-full flex flex-col items-center justify-center gap-1">
+              <ion-avatar class="ion-activatable overflow-hidden bg-blue-400 text-white relative w-24 h-24 flex items-center justify-center not-dark:shadow-lg"  @click="openModalPerfil('agregar', null)">
+                <icon-custom icon="plus" size="6xl"/>
+                <ion-ripple-effect/>
+              </ion-avatar>
+              <p class="text-sm opacity-0">Agregar</p>
+            </div>
           </div>
-        </div>
-
-        <div class="w-full grid grid-cols-2 gap-2">
-          <btn-primary fill="clear" size="large" class="w-full" @click="editarPerfiles">
-            <div class="flex items-center gap-2">
-              <icon-custom :icon="editPerfil.icon"/>
-              {{ editPerfil.text }}
-            </div>
-          </btn-primary>
-
-          <btn-primary shape="round">
-            <div class="flex items-center gap-2" @click="openModalPerfil('agregar', null)">
-              <icon-custom icon="add"/>
-              Agregar
-            </div>
-          </btn-primary>
-
         </div>
       </div>
 
@@ -219,8 +249,13 @@ onMounted(() => {
             <div class="rounded-full flex w-full px-3 items-center gap-2 dark:bg-[#2a2a2a] not-dark:bg-gray-200">
               <div class="flex items-center">
                 <icon-custom icon="user" />
-                <input ref="namePerfil" v-model="showModalPerfil.username" type="text" placeholder="Nombre perfil"
-                       class="flex-1 w-full p-2 focus:outline-none focus:ring-0">
+                <input ref="namePerfil"
+                       v-model="showModalPerfil.username"
+                       type="text"
+                       placeholder="Nombre perfil"
+                       class="flex-1 w-full p-2 focus:outline-none focus:ring-0"
+                       @keydown.enter="onDone"
+                >
               </div>
             </div>
 
@@ -241,7 +276,21 @@ onMounted(() => {
           :message="toast.message"
       />
 
+      <loader-normal
+          :open="initialLoading"
+      />
+
     </ion-content>
+    <ion-footer class="ion-no-border mb-8">
+      <div class="w-full flex gap-2 px-2 py-2">
+        <btn-primary shape="round" size="large" class="w-full" @click="editarPerfiles">
+          <div class="flex items-center gap-2">
+            <icon-custom :icon="editPerfil.icon"/>
+            {{ editPerfil.text }}
+          </div>
+        </btn-primary>
+      </div>
+    </ion-footer>
   </ion-page>
 </template>
 

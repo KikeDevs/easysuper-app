@@ -24,7 +24,7 @@ const bg = computed(() => colorFromTextStable(useProfileStore().selected?.name_p
   <ion-page>
   <!-- Header -->
   <ion-header :translucent="true" class="ion-no-border">
-    <toolbar-custom class="pr-3 md-toolbar padding-bottom">
+    <toolbar-custom class="px-2 padding-bottom">
       <ion-title>Ofertas</ion-title>
 
       <template #start>

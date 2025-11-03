@@ -5,7 +5,7 @@ import { IonModal, IonContent, IonList } from '@ionic/vue'
 import IconCustom from "@/views/Components/IconCustom.vue";
 import ItemCustom from "@/views/Components/ItemCustom.vue";
 
-import {miList} from "@/types/types";
+import {miList} from "@/interfaces/types";
 import {computed} from "vue";
 import {colorFromTextStable, readableTextColor} from "@/utils/colorFromText";
 import {useProfileStore} from "@/stores/profile";

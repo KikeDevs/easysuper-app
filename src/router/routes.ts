@@ -70,7 +70,7 @@ const routes = [
         component: () => import('../views/Pages/Configuraciones/Configuraciones.vue'),
     },
     {
-        path: "/admin-perfiles",
+        path: "/configs/admin-perfiles/",
         name: "AdministrarPerfiles",
         component: () => import('../views/Pages/Configuraciones/AdminPerfiles.vue'),
     },

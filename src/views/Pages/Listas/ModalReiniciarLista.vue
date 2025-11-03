@@ -2,7 +2,7 @@
 import IconCustom from "@/views/Components/IconCustom.vue";
 import {IonRippleEffect, IonContent, IonToast} from "@ionic/vue";
 import {ref, watch} from "vue";
-import {ListReboot} from "@/types/types";
+import {ListReboot} from "@/interfaces/types";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import {formatFechaLarga} from "@/utils/formatFecha";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
@@ -29,6 +29,7 @@ async function reiniciarLista(tipo: string): Promise<void> {
     emit('refresh');
   }
   showToast(resp.message);
+
 }
 
 
@@ -53,7 +54,7 @@ watch(isOpen, (open) => {
           <div class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"
                @click="isOpen = false"
           >
-            <icon-custom icon="cross"/>
+            <icon-custom icon="cross-small"/>
             <ion-ripple-effect/>
           </div>
         </template>

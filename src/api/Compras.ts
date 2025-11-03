@@ -1,5 +1,5 @@
 import {api} from "@/services/api";
-import {Terminada} from "@/types/types";
+import {Terminada} from "@/interfaces/types";
 
 interface actionResponse {
     status: 'ok'| 'error' | 'warning';

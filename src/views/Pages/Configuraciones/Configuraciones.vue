@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import {IonPage, IonContent, IonBackButton, IonHeader, IonToast} from "@ionic/vue";
+import {IonPage, IonContent, IonBackButton, IonHeader, IonToast, onIonViewDidEnter, alertController} from "@ionic/vue";
 import ItemUser from "@/views/Components/ItemUser.vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import CardCustom from "@/views/Components/CardCustom.vue";
 import BtnCard from "@/views/Components/BtnCard.vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import {useProfileStore} from "@/stores/profile";
-import {Profile} from "@/types/types";
-import {computed, onMounted, ref} from "vue";
+import {Profile} from "@/interfaces/types";
+import {computed, ref} from "vue";
 import {userPerfiles} from "@/api/UserProfiles";
-import router from "@/router/router";
+import {useRouter} from "vue-router";
+import {useAuthStore} from "@/stores/auth";
+import {logOutUser} from "@/api/Login";
 
+const router = useRouter();
 const perfilActivo = computed(() => useProfileStore().selected?.profile_id);
 
 const toast = ref({ show: false, message: "" });
@@ -34,16 +37,41 @@ function onSelectProfile(p: Profile): void {
   useProfileStore().select(p);
 }
 
-onMounted(() => {
-  getPerfiles()
+function goPerfiles(): void {
+  router.push("configs/admin-perfiles");
+}
+
+
+async function confirmCloseSesion(): Promise<void> {
+  const alert = await alertController.create({
+    header: "Cerrar Sesion",
+    message: `¿Seguro que quieres cerrar sesion?`,
+    buttons: [
+      { text: "Cancelar", role: "cancel" },
+      { text: "Confirmar", role: "destructive", handler: async () => await cerrarSesion()},
+    ],
+  });
+  await alert.present();
+}
+
+async function cerrarSesion(): Promise<void> {
+  const auth = useAuthStore();
+  await logOutUser();
+  await auth.logoutAndReset();
+  await router.replace("/");
+}
+
+onIonViewDidEnter(async () => {
+  await Promise.all([getPerfiles()]);
 })
+
 </script>
 
 <template>
   <ion-page>
 
     <ion-header :translucent="true" class="ion-no-border">
-      <toolbar-custom class="pr-3 md-toolbar">
+      <toolbar-custom class="px-2">
         <template #start>
           <ion-back-button size="small" />
         </template>
@@ -51,7 +79,6 @@ onMounted(() => {
         </template>
       </toolbar-custom>
     </ion-header>
-
 
     <ion-content :fullscreen="true" class="ion-padding">
       <div class="w-full h-full flex flex-col gap-5">
@@ -64,7 +91,11 @@ onMounted(() => {
           />
         </div>
 
-        <btn-primary shape="round" size="large">Administra los perfiles</btn-primary>
+        <div class="flex justify-center">
+          <btn-primary shape="round"
+                       size="large"
+                       class="w-[70vw]" @click="goPerfiles">Administra los perfiles</btn-primary>
+        </div>
 
         <div class="w-full h-full flex-1">
           <card-custom>
@@ -72,7 +103,7 @@ onMounted(() => {
             <btn-card text="Recomendar" icon="heart" class="border-b-1 not-dark:border-gray-300"/>
             <btn-card text="Condiciones de privacidad" icon="angle-right" class="border-b-1 not-dark:border-gray-300"/>
             <btn-card text="Información de la app" icon="arrow-up-right-from-square" class="border-b-1 not-dark:border-gray-300"/>
-            <btn-card text="Cerrar sesión" icon="angle-right"/>
+            <btn-card text="Cerrar sesión" icon="angle-right" @click="confirmCloseSesion()"/>
           </card-custom>
         </div>
 

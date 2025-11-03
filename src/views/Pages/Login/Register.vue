@@ -110,9 +110,9 @@ async function nuevoUser(): Promise<void> {
 </script>
 
 <template>
-  <ion-page :fullscreen="true">
+  <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="md-toolbar">
+      <toolbar-custom class="px-2">
         <template #start>
           <ion-back-button />
         </template>

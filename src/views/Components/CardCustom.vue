@@ -9,7 +9,7 @@ const props = defineProps({
 })
 </script>
 <template>
-  <div class="w-full rounded-xl shadow-lg overflow-hidden relative border-2 border-gray-200  dark:border-0 dark:bg-[#2a2a2a]" :class="ripple ? 'ion-activatable ripple-parent rounded-rectangle' : ''">
+  <div class="w-full rounded-xl shadow-lg overflow-hidden relative dark:border-0 dark:bg-[#2a2a2a]" :class="ripple ? 'ion-activatable ripple-parent rounded-rectangle' : ''">
     <ion-ripple-effect/>
     <slot/>
   </div>

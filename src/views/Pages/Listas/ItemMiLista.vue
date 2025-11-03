@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {miList} from "@/types/types";
+import {miList} from "@/interfaces/types";
 import {computed} from "vue";
 import {colorFromTextStable, readableTextColor} from "@/utils/colorFromText";
 import IconCustom from "@/views/Components/IconCustom.vue";
@@ -12,7 +12,6 @@ const bg = computed(() => colorFromTextStable(props.item.name_list));
 const fg = computed(() => readableTextColor(bg.value));
 
 const emit = defineEmits<{
-  (e: 'click'): void,
   (e: 'ver'): void,
 }>();
 
@@ -36,9 +35,6 @@ const emit = defineEmits<{
         <p class="w-full font-bold text-2xl leading-none">{{item.name_list}}</p>
       </div>
 
-      <div class="overflow-hidden relative flex rounded-full p-1 ion-activatable" @click.stop="emit('click')">
-        <icon-custom icon="menu-dots-vertical" size="xl"/>
-        <ion-ripple-effect/>
-      </div>
+      <slot/>
     </div>
 </template>

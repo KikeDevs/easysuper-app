@@ -20,14 +20,16 @@ import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import ModalOpcionesLista from "@/views/Pages/Listas/ModalOpcionesLista.vue";
 
 import {misList, addList, deleteList, getListsFinished} from "@/api/Lists";
-import {ListReboot, miList} from "@/types/types";
+import {ListReboot, miList} from "@/interfaces/types";
 import ItemMiLista from "@/views/Pages/Listas/ItemMiLista.vue";
 import router from "@/router/router";
 import ModalAgregarLista from "@/views/Pages/Listas/ModalAgregarLista.vue";
 import {colorFromTextStable} from "@/utils/colorFromText";
 import {useProfileStore} from "@/stores/profile";
 import ModalReiniciarLista from "@/views/Pages/Listas/ModalReiniciarLista.vue";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 
+const initialLoading = ref(false);
 
 const ionRouter = useIonRouter();
 const goConfigs = () => ionRouter.push("configs");
@@ -133,7 +135,12 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
-  await Promise.all([cargarMisListas(),ultimasLists()]);
+  initialLoading.value = true;
+  try {
+    await Promise.all([cargarMisListas(),ultimasLists()]);
+  }finally {
+    initialLoading.value = false;
+  }
 })
 </script>
 
@@ -141,7 +148,7 @@ onIonViewDidEnter(async () => {
   <ion-page>
     <!-- Header -->
     <ion-header :translucent="true" class="ion-no-border">
-      <toolbar-custom class="pr-3 md-toolbar padding-bottom">
+      <toolbar-custom class="px-2 padding-bottom">
         <ion-title>Listas</ion-title>
 
         <template #start>
@@ -181,9 +188,12 @@ onIonViewDidEnter(async () => {
           <p class="font-bold text-blue-500 dark:text-white">No hay listas</p>
         </div>
         <item-mi-lista v-else v-for="s in misListas" :item="s"
-                       class="border-b-1 dark:border-b-white/40 not-dark:border-gray-300"
-                       @ver="verLista(s.userlist_id,s.name_list)"
-                       @click="openOpciones(s)"/>
+                       @ver="verLista(s.userlist_id,s.name_list)">
+          <div class="overflow-hidden relative flex rounded-full p-1 ion-activatable" @click.stop="openOpciones(s)">
+            <icon-custom icon="menu-dots-vertical" size="xl"/>
+            <ion-ripple-effect/>
+          </div>
+        </item-mi-lista>
 
         <div class="flex justify-center transition-all ease-in-out duration-300"
              :class="misListas.length > 6 ? 'fixed z-10 bottom-4 right-4' : 'relative w-full mt-3'">
@@ -232,6 +242,8 @@ onIonViewDidEnter(async () => {
           :message="toast.message"
           @didDismiss="toast.show = false"
       />
+
+      <loader-normal :open="initialLoading"/>
     </ion-content>
 
   </ion-page>
