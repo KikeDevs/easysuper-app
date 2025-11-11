@@ -15,7 +15,9 @@ import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
 import ModalAdminPerfiles from "@/views/Pages/Configuraciones/ModalAdminPerfiles.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
+const ui = useUiStore();
 const router = useRouter();
 
 const initialLoading = ref(false);
@@ -50,6 +52,7 @@ async function allPerfiles(): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
     await Promise.all([allPerfiles()]);
@@ -62,7 +65,7 @@ onIonViewDidEnter(async () => {
 <template>
   <ion-page>
     <ion-header :translucent="true" class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{paddingTop:ui.toolbarPaddingTop + 'px'}">
         <ion-title>Administra los perfiles</ion-title>
         <template #end>
           <ion-button @click="router.back()">Listo</ion-button>

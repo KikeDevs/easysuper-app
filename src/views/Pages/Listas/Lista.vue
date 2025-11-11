@@ -16,6 +16,7 @@ import { getListDetails } from "@/api/Lists";
 import {deleteProduct, getDepartaments} from "@/api/Productos";
 import { colorFromTextStable } from "@/utils/colorFromText";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
 const props = defineProps<{
   listId: number,
@@ -23,6 +24,8 @@ const props = defineProps<{
 }>();
 
 const initialLoading = ref(false);
+
+const ui = useUiStore();
 
 const showSearch = ref(false);
 const toast = ref({ show: false, message: "" });
@@ -62,6 +65,7 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
     await Promise.all([getProductosLista(), obDepartamentos()]);
@@ -103,7 +107,7 @@ const grupos = computed<Group[]>(() => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{ paddingTop: ui.toolbarPaddingTop + 'px' }">
         <ion-title>Lista {{ nameList }}</ion-title>
         <template #start>
           <ion-back-button/>
@@ -178,6 +182,7 @@ const grupos = computed<Group[]>(() => {
         v-model:is-open="showSearch"
         :departamentos="departaments"
         @refresh="refreshProductos"
+        :p-top="ui.toolbarPaddingTop"
     />
   </ion-page>
 </template>

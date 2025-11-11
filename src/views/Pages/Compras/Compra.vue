@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import {IonPage, IonContent, IonHeader, IonTitle, IonBackButton, IonFooter, IonToast, onIonViewDidEnter, onIonViewWillLeave} from "@ionic/vue";
-import {computed, ref, watch} from "vue";
+import {
+  IonBackButton,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToast,
+  IonModal,
+  onIonViewDidEnter,
+  onIonViewWillLeave
+} from "@ionic/vue";
+import {computed, nextTick, ref, watch} from "vue";
 import router from "@/router/router";
 
 import {ProductList} from "@/interfaces/products";
@@ -18,11 +29,14 @@ import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
 const props = defineProps<{
   userlistId: number;
   nameList: string;
 }>();
+
+const ui = useUiStore();
 
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -32,7 +46,7 @@ const compraTerminada = ref<boolean>(false);
 const showFinalizadaModal = ref(false);
 const terminarCompraModal = ref(false);
 
-const POLL_MS = 10000;
+const POLL_MS = 8000;
 const listDetails = ref<ProductList[]>([]);
 const intervalId = ref<number | null>(null);
 const inFlight = ref(false);
@@ -42,22 +56,28 @@ const versionKey = ref(0);
 
 // --- Tu función actual, con guardas para no solapar ---
 async function getMiListDetails(): Promise<void> {
-  if (inFlight.value) return; // evita solapes
+  if (inFlight.value) return;
   inFlight.value = true;
   try {
-
     const ter = await terminadaCompra(props.userlistId);
-    let array = ter.terminada ?? [];
 
-    compraTerminada.value = array.length > 0;
+    const terminada = ter.terminada;
+
+    if (terminada == 'si'){
+      stopPolling();
+      await nextTick();
+      showFinalizadaModal.value = true;
+      return;
+    }
 
     const resp = await getListDetails(props.userlistId);
     listDetails.value = resp.listDetalles ?? [];
-    versionKey.value++; // cambia la key para forzar remount de ítems
+    versionKey.value++;
   } finally {
     inFlight.value = false;
   }
 }
+
 
 function startPolling() {
   stopPolling(); // por si acaso
@@ -81,6 +101,7 @@ function irAHome() {
 
 // Lifecycles correctos para páginas Ionic
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
     await Promise.all([getMiListDetails(), obDepartamentos()]);
@@ -98,6 +119,8 @@ onIonViewWillLeave(() => {
 async function finalizarCompra(){
   const resp = await terminarCompra(props.userlistId,useProfileStore().selected?.profile_id ?? 0);
   if (resp.status === 'ok') {
+    stopPolling();
+    await nextTick();
     terminarCompraModal.value = true;
   }
 
@@ -110,9 +133,10 @@ watch(() => props.userlistId, async () => {
   await getMiListDetails();
   startPolling();
 });
-watch(compraTerminada, (yaTerminada) => {
+watch(compraTerminada, async (yaTerminada) => {
   if (yaTerminada) {
-    stopPolling();               // deja de hacer polling
+    stopPolling();
+    await nextTick();
     showFinalizadaModal.value = true; // abre modal
   }
 });
@@ -169,7 +193,7 @@ const grupos = computed<Group[]>(() => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
         <ion-title> Compra Lista {{ nameList }}</ion-title>
         <template #start>
           <ion-back-button/>
@@ -207,7 +231,7 @@ const grupos = computed<Group[]>(() => {
 
 
       <ion-modal
-          :is-open="showFinalizadaModal"
+          v-model:is-open="showFinalizadaModal"
           :backdrop-dismiss="false"
       >
         <div class="p-5 flex flex-col gap-4 w-full h-full">
@@ -261,7 +285,7 @@ const grupos = computed<Group[]>(() => {
 
     </ion-content>
 
-    <ion-footer class="ion-no-border mb-8">
+    <ion-footer class="ion-no-border" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
       <div class="px-3 py-1">
         <btn-primary shape="round"
                      size="large"

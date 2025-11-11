@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   IonPage, IonContent, IonImg, IonBackButton, IonButton,
-  IonToast, isPlatform, useIonRouter, IonHeader
+  IonToast, isPlatform, useIonRouter, IonHeader, onIonViewDidEnter
 } from "@ionic/vue";
 import InputCustom from "@/views/Components/InputCustom.vue";
 import { computed, ref } from "vue";
@@ -9,11 +9,13 @@ import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import InputContainer from "@/views/Components/InputContainer.vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
-import { logUser } from "@/api/Login";
+import {loginWithGoogle, logUser} from "@/api/Login";
 import { useAuthStore } from "@/stores/auth";
+import {useUiStore} from "@/stores/statusbar";
 
 const isIos = computed(() => isPlatform('ios'));
 const ionRouter = useIonRouter();
+const ui = useUiStore();
 
 const toast = ref({ show: false, message: "" });
 function showToast(message: string) {
@@ -78,18 +80,49 @@ async function inUser(): Promise<void> {
   }
 }
 
+
+async function loginGoogle(): Promise<void> {
+  loading.value = true;
+  try {
+    const resp = await loginWithGoogle();
+    console.log("[loginGoogle] resp:", resp);
+
+    if (resp.status === "ok") {
+      if (resp.token && resp.user) {
+        await useAuthStore().setSession(resp.token, resp.user);
+      }
+      showToast("Sesión iniciada con Google.");
+      ionRouter.replace("/users");
+      return;
+    }
+
+    showToast(resp.message || "No se pudo iniciar sesión con Google.");
+  } catch (e: any) {
+    console.error("[loginGoogle] error:", e);
+    const msg = e?.message || "Error inesperado en Google Login.";
+    showToast(msg);
+  } finally {
+    loading.value = false;
+  }
+}
+
+
 function goRegister(): void {
   ionRouter.push("register");
 }
 function goRecuperar(): void {
   ionRouter.push("olvidar");
 }
+
+onIonViewDidEnter(async ()=> {
+  await ui.refresh();
+})
 </script>
 
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
         <template #start>
           <ion-back-button/>
         </template>
@@ -154,7 +187,7 @@ function goRecuperar(): void {
               <div class="w-1/4 h-[2px] bg-orange-400"></div>
             </div>
 
-            <btn-secondary class="w-full mt-3">
+            <btn-secondary class="w-full mt-3" @click="loginGoogle">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/google.png" alt="">
                 Continuar con Google

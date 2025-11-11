@@ -7,12 +7,9 @@ import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import {formatFechaLarga} from "@/utils/formatFecha";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
-import {rebootList} from "@/api/Lists";
+import {getListsFinished, rebootList} from "@/api/Lists";
 import {useProfileStore} from "@/stores/profile";
 
-const props = defineProps<{
-  listsFinished?: ListReboot[];
-}>();
 const isOpen = defineModel<boolean>('is-open',{default: false});
 const emit = defineEmits<{
   (e: 'refresh'): void;
@@ -22,6 +19,14 @@ const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
 
 const listSelect = ref<ListReboot | null>(null);
+const listsFinished = ref<ListReboot[]>([]);
+async function ultimasLists(): Promise<void> {
+  const resp = await getListsFinished();
+
+  listsFinished.value = resp.listReboots ?? [];
+}
+
+
 
 async function reiniciarLista(tipo: string): Promise<void> {
   const resp = await rebootList(listSelect.value?.userlist_id ?? 0,listSelect.value?.name_list ?? '',useProfileStore().selected?.profile_id ?? 0,tipo);
@@ -33,9 +38,10 @@ async function reiniciarLista(tipo: string): Promise<void> {
 }
 
 
-watch(isOpen, (open) => {
+watch(isOpen, async (open) => {
   if (open) {
     listSelect.value = null;
+    await Promise.all([ultimasLists()])
   }
 });
 
@@ -48,7 +54,7 @@ watch(isOpen, (open) => {
       @didDismiss="emit('refresh')"
   >
     <ion-header class="ion-no-border">
-      <toolbar-custom class="pl-2 border-b-1 border-b-gray-400">
+      <toolbar-custom class="px-2 border-b-1 border-b-gray-400">
         <ion-title>Reiniciar Lista</ion-title>
         <template #end>
           <div class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"

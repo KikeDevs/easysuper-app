@@ -19,7 +19,13 @@ export function wireApiAuth() {
     api.interceptors.request.use((config) => {
         const auth = useAuthStore();
         if (auth.token) {
-            config.headers = config.headers ?? {};
+            // @ts-ignore
+            config.headers = {
+                ...(config.headers ?? {}),
+                "Cache-Control": "no-store,no-cache,must-revalidate",
+                Pragma: "no-cache",
+            }
+
             config.headers.Authorization = `Bearer ${auth.token}`;
         }
         return config;

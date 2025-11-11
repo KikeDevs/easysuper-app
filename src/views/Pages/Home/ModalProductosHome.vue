@@ -22,6 +22,9 @@ import {colorFromTextStable} from "@/utils/colorFromText";
 import ModalAgregarLista from "@/views/Pages/Listas/ModalAgregarLista.vue";
 import {useProfileStore} from "@/stores/profile";
 
+const props = defineProps<{
+  tTop: number;
+}>()
 
 const perfilId = useProfileStore().selected?.profile_id ?? 0;
 
@@ -214,7 +217,7 @@ watch(isOpen, async (open) => {
   >
     <ion-page id="main-content">
       <ion-header class="ion-no-border">
-        <toolbar-custom class="px-2">
+        <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
           <template #start>
             <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {isOpen = false}">
               <icon-custom icon="arrow-small-left" size="3xl"/>
@@ -305,7 +308,7 @@ watch(isOpen, async (open) => {
             @didDismiss="() => { showAgregar = false; productsSeleccionados = []}"
         >
           <ion-header class="ion-no-border">
-            <toolbar-custom class="px-2">
+            <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
               <ion-title>Guardar en:</ion-title>
               <template #start>
                 <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {showAgregar = false}">
@@ -342,7 +345,7 @@ watch(isOpen, async (open) => {
             @didDismiss="modalSeleccionados = false"
         >
           <ion-header class="ion-no-border">
-            <toolbar-custom class="px-2">
+            <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
               <ion-title>Seleccionados</ion-title>
               <template #start>
                 <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {modalSeleccionados = false}">

@@ -8,8 +8,11 @@ import {User} from "@/interfaces/configs";
 import {computed, ref} from "vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
 const initialLoading = ref(false);
+
+const ui = useUiStore();
 
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -74,6 +77,7 @@ async function actualizarUser(): Promise<void> {
 
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
     await Promise.all([obUser()])
@@ -87,7 +91,7 @@ onIonViewDidEnter(async () => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{ paddingTop: ui.toolbarPaddingTop + 'px'}">
         <ion-title>Cuenta</ion-title>
         <template #start>
           <ion-back-button/>

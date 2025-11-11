@@ -6,14 +6,15 @@ import {
   IonTitle,
   IonContent,
   IonToast,
-  IonRippleEffect,
+  IonRippleEffect, onIonViewDidEnter, onIonViewWillEnter,
 } from "@ionic/vue";
 
 import { App as CapacitorApp } from "@capacitor/app";
-import { onMounted, onBeforeUnmount, computed, ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { getSaludo } from "@/utils/saludo";
+import { useUiStore } from "@/stores/statusbar";
 import { useProfileStore } from "@/stores/profile";
 import { colorFromTextStable } from "@/utils/colorFromText";
 
@@ -24,6 +25,8 @@ import ModalIniciarCompra from "@/views/Pages/Compras/ModalIniciarCompra.vue";
 import ModalProductosHome from "@/views/Pages/Home/ModalProductosHome.vue";
 
 // -------- estado existente --------
+
+const ui = useUiStore()
 const saludo = getSaludo();
 const router = useRouter();
 const profileStore = useProfileStore();
@@ -58,20 +61,13 @@ function closeModal(): void {
 let lastBackTime = 0;
 let backListener: { remove: () => void } | null = null;
 
-onMounted(async () => {
+onIonViewDidEnter(async () => {
+  await ui.refresh();
   backListener = await CapacitorApp.addListener("backButton", ({canGoBack}) => {
-    // canGoBack lo da Capacitor en Android:
-    // true  -> hay historial para hacer pop (pantalla interna)
-    // false -> es la raíz, normalmente saldría de la app
-
-   if (canGoBack) {
-      // estamos en una subpantalla (por ejemplo entraste a configs, listas, etc.)
-      // deja que navegue para atrás normal
+    if (canGoBack) {
       //router.back();
       return;
     }
-
-    // estamos en la pantalla raíz (Home). Aquí hacemos doble tap para salir.
     const now = Date.now();
     if (now - lastBackTime < 1000) {
       CapacitorApp.exitApp();
@@ -80,9 +76,9 @@ onMounted(async () => {
 
     lastBackTime = now;
   });
-});
+})
 
-onBeforeUnmount(() => {
+onIonViewWillEnter(() => {
   if (backListener) {
     backListener.remove();
     backListener = null;
@@ -93,7 +89,7 @@ onBeforeUnmount(() => {
 <template>
   <ion-page>
     <ion-header class="ion-no-border" id="header" :translucent="true">
-      <toolbar-custom class="px-2 padding-bottom">
+      <toolbar-custom class="px-2 padding-bottom" :style="{ paddingTop: ui.toolbarPaddingTop + 'px'}">
         <ion-title>
           <div class="flex items-center gap-0.5">
             <img class="w-9 h-9" src="/assets/logo.png" alt="logo"/>
@@ -101,7 +97,8 @@ onBeforeUnmount(() => {
           </div>
         </ion-title>
         <template #end>
-          <div class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable">
+          <div v-if="profileStore.locationGranted" class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"
+               @click="async () => await router.push('mapa')">
             <icon-custom icon="marker" size="xl"/>
             <ion-ripple-effect/>
           </div>
@@ -176,6 +173,7 @@ onBeforeUnmount(() => {
 
       <modal-productos-home
           v-model:is-open="showBuscar"
+          :t-top="ui.toolbarPaddingTop"
           @close="showBuscar = false"
       />
 

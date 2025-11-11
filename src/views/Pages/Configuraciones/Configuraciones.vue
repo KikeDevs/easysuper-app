@@ -12,7 +12,9 @@ import {userPerfiles} from "@/api/UserProfiles";
 import {useRouter} from "vue-router";
 import {useAuthStore} from "@/stores/auth";
 import {logOutUser} from "@/api/Login";
+import {useUiStore} from "@/stores/statusbar";
 
+const ui = useUiStore()
 const router = useRouter();
 const perfilActivo = computed(() => useProfileStore().selected?.profile_id);
 
@@ -62,6 +64,7 @@ async function cerrarSesion(): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   await Promise.all([getPerfiles()]);
 })
 
@@ -71,7 +74,7 @@ onIonViewDidEnter(async () => {
   <ion-page>
 
     <ion-header :translucent="true" class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{ paddingTop: ui.toolbarPaddingTop + 'px'}">
         <template #start>
           <ion-back-button size="small" />
         </template>

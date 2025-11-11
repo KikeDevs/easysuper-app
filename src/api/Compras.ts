@@ -47,13 +47,13 @@ export async function terminarCompra(userlistId: number, perfilId: number) {
 
 interface TerminadaResponse {
     status: 'ok'| 'error' | 'warning';
-    terminada?: Terminada[]
+    terminada?: string;
     message: string;
 }
 
 export async function terminadaCompra(userlistId:number): Promise<TerminadaResponse>{
     try {
-        const resp = await api.post<TerminadaResponse>('compra_terminada',
+        const resp = await api.post<TerminadaResponse>('compra-terminada',
             {
                 userlist_id: userlistId,
             });

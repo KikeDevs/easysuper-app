@@ -16,8 +16,11 @@ import {colorFromTextStable} from "@/utils/colorFromText";
 import { verificarPermisoUbicacion } from "@/utils/ubicacionPermisos";
 import {Keyboard} from "@capacitor/keyboard";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
 const initialLoading = ref(false);
+const ui = useUiStore();
+
 
 const toast = ref({ show: false, message: "" });
 function showToast(message: string) {
@@ -175,6 +178,7 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
 
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
     await Promise.all([checkLocationPermiso(),userProfiles()])
@@ -187,7 +191,7 @@ onIonViewDidEnter(async () => {
 
 <template>
   <ion-page>
-    <ion-content :fullscreen="true" class="ion-padding">
+    <ion-content class="ion-padding">
 
       <ion-refresher slot="fixed" @ionRefresh="doRefresh" class="mt-8">
         <ion-refresher-content
@@ -281,8 +285,8 @@ onIonViewDidEnter(async () => {
       />
 
     </ion-content>
-    <ion-footer class="ion-no-border mb-8">
-      <div class="w-full flex gap-2 px-2 py-2">
+    <ion-footer class="ion-no-border">
+      <div class="w-full flex gap-2 px-2 pt-2" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
         <btn-primary shape="round" size="large" class="w-full" @click="editarPerfiles">
           <div class="flex items-center gap-2">
             <icon-custom :icon="editPerfil.icon"/>

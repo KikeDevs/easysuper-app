@@ -15,7 +15,8 @@ import {useProfileStore} from "@/stores/profile";
 
 const props = defineProps<{
   userlist_id: number,
-  departamentos: Departamento[]
+  departamentos: Departamento[],
+  pTop: number,
 }>();
 
 const isOpen = defineModel<boolean>('is-open', { default: false });
@@ -116,7 +117,7 @@ watch(isOpen, async (open) => {
   >
     <ion-page id="main-content">
       <ion-header class="ion-no-border">
-        <toolbar-custom class="pr-3 md-toolbar">
+        <toolbar-custom class="px-2" :style="{ paddingTop: pTop + 'px'}">
           <template #start>
             <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {isOpen = false}">
               <icon-custom icon="arrow-small-left" size="3xl"/>

@@ -112,7 +112,6 @@ async function eliminarPerfil(): Promise<void> {
 
 <template>
   <ion-modal
-      :translucent="true"
       v-model:is-open="isOpen"
       :initial-breakpoint="0.5"
       @didDismiss="emit('close')"

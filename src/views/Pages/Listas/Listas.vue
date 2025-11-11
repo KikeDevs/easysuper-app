@@ -28,9 +28,11 @@ import {colorFromTextStable} from "@/utils/colorFromText";
 import {useProfileStore} from "@/stores/profile";
 import ModalReiniciarLista from "@/views/Pages/Listas/ModalReiniciarLista.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import {useUiStore} from "@/stores/statusbar";
 
 const initialLoading = ref(false);
 
+const ui = useUiStore();
 const ionRouter = useIonRouter();
 const goConfigs = () => ionRouter.push("configs");
 
@@ -60,13 +62,6 @@ async function cargarMisListas(): Promise<void> {
     return;
   }
   misListas.value = resp.misLists ?? [];
-}
-
-const listsFinished = ref<ListReboot[]>([]);
-async function ultimasLists(): Promise<void> {
-  const resp = await getListsFinished();
-
-  listsFinished.value = resp.listReboots ?? [];
 }
 
 //Ver Lista
@@ -135,9 +130,10 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
+  await ui.refresh();
   initialLoading.value = true;
   try {
-    await Promise.all([cargarMisListas(),ultimasLists()]);
+    await Promise.all([cargarMisListas()]);
   }finally {
     initialLoading.value = false;
   }
@@ -148,7 +144,7 @@ onIonViewDidEnter(async () => {
   <ion-page>
     <!-- Header -->
     <ion-header :translucent="true" class="ion-no-border">
-      <toolbar-custom class="px-2 padding-bottom">
+      <toolbar-custom class="px-2 padding-bottom" :style="{ paddingTop: ui.toolbarPaddingTop + 'px'}">
         <ion-title>Listas</ion-title>
 
         <template #start>
@@ -157,7 +153,6 @@ onIonViewDidEnter(async () => {
 
         <template #end>
           <div
-              v-if="listsFinished.length > 0"
               class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"
               @click="modalReiniciar = true"
           >
@@ -231,7 +226,6 @@ onIonViewDidEnter(async () => {
 
       <modal-reiniciar-lista
           v-model:is-open="modalReiniciar"
-          :listsFinished="listsFinished"
           @refresh="reiniciarLista"
       />
 

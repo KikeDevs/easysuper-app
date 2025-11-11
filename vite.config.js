@@ -6,7 +6,13 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-      vue(),
+      vue({
+          template: {
+              compilerOptions: {
+                  isCustomElement: (tag) => tag.startsWith('capacitor-')
+              },
+          },
+      }),
       legacy(),
       tailwindcss()
   ],
