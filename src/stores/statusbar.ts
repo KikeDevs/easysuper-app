@@ -20,7 +20,8 @@ function readSafeTopFallback(platform: Mobile): number {
 
     if (envPx > 0) return envPx;
 
-    return platform === "android" ? 32 : 0;
+    // fallback duro
+    return platform === "android" ? 32 : 20; // en iOS casi siempre ~20+
 }
 
 function readSafeBottomFallback(platform: Mobile): number {
@@ -54,9 +55,9 @@ export const useUiStore = defineStore("ui", {
         androidMajor: 0, // 13, 14, 15...
     }),
     getters: {
+        // 👉 Ahora SIEMPRE usa safeTop; en plataformas donde no aplica será 0
         toolbarPaddingTop(s): number {
-            if (s.platform === "android" && s.topOverlay) return s.safeTop;
-            return 0;
+            return s.safeTop;
         },
         footerPaddingBottom(s): number {
             return s.safeBottom;
@@ -96,10 +97,10 @@ export const useUiStore = defineStore("ui", {
                     this.safeBottom = 0;
                 }
             } else {
-                // iOS
-                this.topOverlay = false;
-                this.safeTop    = 0;
-                this.safeBottom = 15; // o 0 si prefieres
+                // 👉 iOS: también leemos los insets reales
+                this.topOverlay = true; // conceptualmente siempre está encima
+                this.safeTop    = readSafeTopFallback(this.platform);
+                this.safeBottom = readSafeBottomFallback(this.platform);
             }
         },
     },
