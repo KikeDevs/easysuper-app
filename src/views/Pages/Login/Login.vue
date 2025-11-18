@@ -18,10 +18,7 @@ const ionRouter = useIonRouter();
 const ui = useUiStore();
 
 const toast = ref({ show: false, message: "" });
-function showToast(message: string) {
-  toast.value.message = message;
-  toast.value.show = true;
-}
+const showToast = (message: string) => { toast.value = { show: true, message }; };
 
 const User = ref({
   email: "",
@@ -133,7 +130,7 @@ onIonViewDidEnter(async ()=> {
       <div class="w-full h-full flex flex-col gap-5">
         <div class="flex flex-col items-center gap-3">
           <ion-img class="w-26 h-26" src="/assets/logo.png" alt="logo"/>
-          <h1 class="not-dark:text-blue-400 font-bold">BIENVENIDO</h1>
+          <h1 class="not-dark:text-blue-400 text-3xl font-bold">BIENVENIDO</h1>
         </div>
 
         <div class="w-full flex flex-col items-center gap-3">
@@ -211,7 +208,7 @@ onIonViewDidEnter(async ()=> {
 
       <ion-toast
           :is-open="toast.show"
-          :duration="3000"
+          :duration="5000"
           @didDismiss="toast.show = false"
           :message="toast.message"
       />

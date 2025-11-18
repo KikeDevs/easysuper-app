@@ -58,6 +58,9 @@ const routes = [
         path: "/ofertas",
         name: "Ofertas",
         component: () => import('../views/Pages/Ofertas/Ofertas.vue'),
+        props: (route:any) => ({
+            googleId: route.params.googleId ? String(route.params.googleId) : '',
+        })
     },
     {
         path: "/mapa",

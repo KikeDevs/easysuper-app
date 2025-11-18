@@ -27,8 +27,6 @@ export async function logUser(map: {
 export async function loginWithGoogle(): Promise<LoginResponse> {
     try {
         const device_name = await getDeviceName();
-        //const WEB_CLIENT_ID = '542553177675-36nq11dik6t2mblrhhjff6ojmk17kctc.apps.googleusercontent.com';
-
         const loginResult = await SocialLogin.login({
             provider: "google",
             options: {}

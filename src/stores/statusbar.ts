@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { Capacitor } from "@capacitor/core";
-import { App } from "@capacitor/app";
 import { StatusBar } from "@capacitor/status-bar";
+import { Device } from "@capacitor/device";
 
 type Mobile = "android" | "ios";
 
@@ -17,78 +17,90 @@ function readSafeTopFallback(platform: Mobile): number {
     document.body.appendChild(tmp);
     const envPx = parseFloat(getComputedStyle(tmp).height) || 0;
     document.body.removeChild(tmp);
+
     if (envPx > 0) return envPx;
 
     return platform === "android" ? 32 : 0;
+}
+
+function readSafeBottomFallback(platform: Mobile): number {
+    const cs  = getComputedStyle(document.documentElement);
+    const ion = cs.getPropertyValue("--ion-safe-area-bottom").trim();
+    const px  = Number.parseFloat(ion || "0");
+    if (Number.isFinite(px) && px > 0) return px;
+
+    const tmp = document.createElement("div");
+    tmp.style.cssText =
+        "position:fixed;bottom:0;height:constant(safe-area-inset-bottom);height:env(safe-area-inset-bottom);";
+    document.body.appendChild(tmp);
+    const envPx = parseFloat(getComputedStyle(tmp).height) || 0;
+    document.body.removeChild(tmp);
+
+    if (envPx > 0) return envPx;
+
+    // fallback duro si TODO falla
+    if (platform === "android") return 32;
+    return 15;
 }
 
 export const useUiStore = defineStore("ui", {
     state: () => ({
         platform: (Capacitor.getPlatform() === "android" ? "android" : "ios") as Mobile,
 
-        // TOP (status bar)
-        topOverlay: false, // Android: StatusBar.getInfo().overlays
-        safeTop: 0,        // px (solo se usa si topOverlay=true en Android)
-
-        // BOTTOM (solo para exportar como var CSS; el cálculo lo hace el getter)
+        topOverlay: false,
+        safeTop: 0,
         safeBottom: 0,
+
+        androidMajor: 0, // 13, 14, 15...
     }),
     getters: {
-        // Header/toolbar: solo si status bar es flotante en Android
         toolbarPaddingTop(s): number {
             if (s.platform === "android" && s.topOverlay) return s.safeTop;
-            return 0; // iOS no overlay top con Capacitor
-        },
-        // Footer: TU REGLA (solo Android). iOS = 0 siempre.
-        footerPaddingBottom(s): number {
-            if (s.platform === "android") {
-                // Si el status bar NO es overlay ⇒ barra de navegación SÍ es overlay ⇒ 32px
-                return s.topOverlay ? 0 : 32;
-            }
-            // iOS: sin padding extra
             return 0;
+        },
+        footerPaddingBottom(s): number {
+            return s.safeBottom;
         },
     },
     actions: {
+        async ensureAndroidVersionLoaded() {
+            if (this.platform !== "android" || this.androidMajor) return;
+
+            const info = await Device.getInfo();
+            const raw  = (info.osVersion || "0").split(".")[0];
+            const num  = Number.parseInt(raw, 10);
+            this.androidMajor = Number.isFinite(num) ? num : 0;
+        },
+
         async refresh() {
             if (this.platform === "android") {
-                // 1) Saber si el TOP es overlay
+                await this.ensureAndroidVersionLoaded();
+
+                // TOP (status bar)
                 try {
                     const info = await StatusBar.getInfo() as any;
                     this.topOverlay = !!info?.overlays;
                 } catch {
                     this.topOverlay = false;
                 }
-
-                // 2) Calcular TOP padding solo si es overlay
                 this.safeTop = this.topOverlay ? readSafeTopFallback(this.platform) : 0;
 
-                // 3) BOTTOM: solo reflejamos el getter (para exponer var CSS)
-                this.safeBottom = this.footerPaddingBottom;
+                // BOTTOM según versión Android:
+                if (this.androidMajor >= 15) {
+                    // Android 15+ → barra overlay, hay que sumar inset
+                    this.safeBottom = readSafeBottomFallback(this.platform);
+                    if (this.safeBottom < 0)  this.safeBottom = 0;
+                    if (this.safeBottom > 50) this.safeBottom = 50;
+                } else {
+                    // Android 14 y abajo → barra fija, NO sumamos nada
+                    this.safeBottom = 0;
+                }
             } else {
-                // iOS: top nunca overlay; bottom sin padding extra
+                // iOS
                 this.topOverlay = false;
                 this.safeTop    = 0;
-                this.safeBottom = 0;
+                this.safeBottom = 15; // o 0 si prefieres
             }
-
-            // Exponer CSS vars globales
-            document.documentElement.style.setProperty("--ui-safe-top", `${this.toolbarPaddingTop}px`);
-            document.documentElement.style.setProperty("--ui-safe-bottom", `${this.footerPaddingBottom}px`);
-        },
-
-        startListeners() {
-            App.addListener("resume", () => this.refresh());
-            window.addEventListener("orientationchange", () => this.refresh());
-        },
-
-        log() {
-            console.log({
-                platform: this.platform,
-                topOverlay: this.topOverlay,
-                safeTop: this.safeTop,
-                footerPaddingBottom: this.footerPaddingBottom,
-            });
         },
     },
 });

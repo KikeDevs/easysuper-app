@@ -202,32 +202,39 @@ const grupos = computed<Group[]>(() => {
     </ion-header>
 
     <ion-content class="ion-padding">
-      <div v-for="g in grupos" :key="g.id" class="mb-3">
-        <div class="mt-3 pl-1 rounded-t-lg bg-blue-500 text-white dark:bg-[#2a2a2a]">
-          <p class="text-lg font-semibold">{{ g.name }}</p>
-        </div>
-
-        <!-- Items del grupo -->
-        <item-producto-lista
-            v-for="p in g.items"
-            :key="versionKey + '-' + p.product_id"
-        :itemDetails="p"
-        class="transition-opacity ease-in-out duration-300"
-        :class="[p.status_pro === 1 ? 'opacity-40' : 'opacity-100']"
-        @click="productoSeleccionado(p)"
-        >
-
-          <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
-               :style="{background: colorFromTextStable(p.name_perfil)}">
-            <icon-custom icon="user" size="md"/>
+      <TransitionGroup
+          name="list-fade"
+          tag="div"
+          class="flex flex-col"
+          appear
+      >
+        <div v-for="g in grupos" :key="g.id" class="mb-3">
+          <div class="mt-3 pl-1 rounded-t-lg bg-blue-500 text-white dark:bg-[#2a2a2a]">
+            <p class="text-lg font-semibold">{{ g.name }}</p>
           </div>
 
-          <div
-            class="w-6 h-6 mr-2 rounded-full"
-            :class="[p.status_pro === 0 ? 'bg-gray-500' : 'bg-green-600']"
-          />
-        </item-producto-lista>
-      </div>
+          <!-- Items del grupo -->
+          <item-producto-lista
+              v-for="p in g.items"
+              :key="versionKey + '-' + p.product_id"
+              :itemDetails="p"
+              class="transition-opacity ease-in-out duration-300"
+              :class="[p.status_pro === 1 ? 'opacity-40' : 'opacity-100']"
+              @click="productoSeleccionado(p)"
+          >
+
+            <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
+                 :style="{background: colorFromTextStable(p.name_perfil)}">
+              <icon-custom icon="user" size="md"/>
+            </div>
+
+            <div
+                class="w-6 h-6 mr-2 rounded-full"
+                :class="[p.status_pro === 0 ? 'bg-gray-500' : 'bg-green-600']"
+            />
+          </item-producto-lista>
+        </div>
+      </TransitionGroup>
 
 
       <ion-modal

@@ -4,6 +4,7 @@ import {IonContent, IonModal} from "@ionic/vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import {ref} from "vue";
 import {Keyboard} from "@capacitor/keyboard";
+import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 
 
 const isOpen = defineModel<boolean>('is-open',{default: false});
@@ -35,13 +36,19 @@ const emit = defineEmits<{
       @didPresent="focusNameList"
       class="add-list"
   >
-    <ion-content>
-      <div class="flex items-center px-3 pt-2 pb-1">
-        <p class="text-lg font-bold flex-1">Agregar lista</p>
-        <icon-custom icon="cross-small" @click="isOpen = false"/>
-      </div>
+    <ion-header class="ion-no-border">
+      <toolbar-custom class="px-2">
+        <ion-title>Agregar lista</ion-title>
+        <template #end>
+          <ion-button fill="clear" shape="circle" @click="isOpen = false">
+            <icon-custom icon="cross-small"/>
+          </ion-button>
+        </template>
+      </toolbar-custom>
+    </ion-header>
 
-      <div class="w-full p-3 flex flex-col gap-5 justify-center items-center">
+    <ion-content :fullscreen="true" class="ion-padding">
+      <div class="w-full h-full flex flex-col gap-4 justify-center items-center">
         <div class="rounded-full flex w-full px-3 items-center gap-2 dark:bg-[#2a2a2a] not-dark:bg-gray-200">
           <div class="flex items-center">
             <icon-custom icon="document-signed" />
@@ -54,7 +61,7 @@ const emit = defineEmits<{
             >
           </div>
         </div>
-        <div class="flex-1 flex w-full h-full">
+        <div class="flex w-full h-fit">
           <btn-primary size="large" shape="round" class="w-full" @click="emit('agregar')">
             <p>Agregar</p>
           </btn-primary>

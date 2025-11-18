@@ -3,7 +3,7 @@ import {
   IonPage, IonContent, IonHeader, IonBackButton, IonTitle,
   onIonViewDidEnter, onIonViewWillLeave, IonToast, IonModal
 } from "@ionic/vue";
-import { ref } from "vue";
+import {computed, ref} from "vue";
 import {GoogleMap} from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
 import { useUiStore } from "@/stores/statusbar";
@@ -11,7 +11,12 @@ import {fetchNearbySupers, SuperPlace} from "@/api/Map";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import {Capacitor} from "@capacitor/core";
-//import IconCustom from "@/views/Components/IconCustom.vue";
+import IconCustom from "@/views/Components/IconCustom.vue";
+import {getPromosMap} from "@/api/Promociones";
+import {Promo} from "@/interfaces/promos";
+import BtnSecondary from "@/views/Components/BtnSecondary.vue";
+import {useRouter} from "vue-router";
+
 
 const GMAPS_KEY = Capacitor.getPlatform() === "ios"
     ? import.meta.env.VITE_GMAPS_IOS_KEY
@@ -19,6 +24,11 @@ const GMAPS_KEY = Capacitor.getPlatform() === "ios"
 
 const initialLoading = ref(false);
 const ui = useUiStore();
+const router = useRouter();
+
+const addButtonStyle = computed(() => ({
+  bottom: (16 + ui.footerPaddingBottom) + "px", // 16px (bottom-4) + safe-area
+}));
 
 const openOfertas = ref(false);
 function openModal(){
@@ -136,8 +146,8 @@ async function createGoogleMap(): Promise<void> {
      title: s.title,
      iconUrl: s.icon,
      iconSize: {
-       width: 32,
-       height: 32,
+       width: 40,
+       height: 40,
      }
     });
 
@@ -148,9 +158,8 @@ async function createGoogleMap(): Promise<void> {
   await map.setOnMarkerClickListener(async (event) => {
     const clicked = markerById.get(event.markerId)
     if (!clicked) return;
-
     superSelect.value = clicked;
-
+    await ofertasMap(clicked.id,clicked.brand);
     await map?.setCamera({
       coordinate: {
         lat: clicked.lat,
@@ -259,7 +268,34 @@ async function attachCameraLimits(center: LatLng): Promise<void> {
   });
 }
 
+const allPromos = ref<Promo[]>([]);
+const espPromos = ref<Promo[]>([]);
+async function ofertasMap(id:string,marca:string): Promise<void> {
+  allPromos.value = []; espPromos.value = [];
+  const resp = await getPromosMap(id,marca);
+  allPromos.value = resp.all_promos ?? [];
+  espPromos.value = resp.esp_promos ?? [];
+  if (resp.status == 'ok' && (allPromos.value.length > 0 || espPromos.value.length > 0)) openOfertas.value = true;
+  else showToast('No hay ofertas agregadas.')
+}
+function urlPromos(img_promo: string): string {
+  const BASE = 'https://darkgrey-jaguar-767398.hostingersite.com/';
+  const CARP = 'ofertas/';
 
+  const brand = superSelect?.value;
+  const brandSeg = brand ? `${encodeURIComponent(brand.brand)}/` : '';
+
+  return `${BASE}${CARP}${brandSeg}${encodeURIComponent(img_promo)}`;
+}
+
+function openOfertasGoogle(): void {
+  router.push({
+    name: 'Ofertas',
+    params: {
+      googleId: superSelect.value?.id
+    }
+  })
+}
 
 onIonViewDidEnter(async () => {
   initialLoading.value = true;
@@ -315,32 +351,46 @@ onIonViewWillLeave(async () => {
       <ion-modal
           v-model:is-open="openOfertas"
           @didDismiss="openOfertas = false"
-          :initial-breakpoint="0.5"
+          :initial-breakpoint="0.65"
       >
-
         <ion-header class="ion-no-border">
           <toolbar-custom class="px-2">
             <ion-title>{{superSelect?.title}}</ion-title>
           </toolbar-custom>
         </ion-header>
-        <ion-content >
-          <div class="w-full h-full bg-[#f5f5f5]">
-
+        <ion-content :fullscreen="true">
+          <div class="w-full h-full flex flex-col items-start gap-2 bg-[#f5f5f5] dark:bg-[#121212] p-5">
+            <TransitionGroup
+                name="list-fade"
+                tag="div"
+                appear
+                class="w-full flex flex-col gap-5"
+            >
+              <img v-for="a in allPromos" :key="`all-${a.promo_id}`"
+                   :src="urlPromos(a.img_promo)" :alt="a.img_promo" loading="lazy"
+                   class="shadow-md rounded-4xl"/>
+              <img v-for="e in espPromos" :key="`esp-${e.promo_id}`"
+                   :src="urlPromos(e.img_promo)" :alt="e.img_promo" loading="lazy"
+                   class="shadow-md rounded-4xl"/>
+            </TransitionGroup>
+            <btn-secondary class="w-full mt-3" @click="openOfertasGoogle">
+              Ver mas
+            </btn-secondary>
           </div>
         </ion-content>
       </ion-modal>
 
     </ion-content>
 
-    <!--<div class="fixed bottom-5 inset-x-0 w-full flex justify-center">
+    <div v-if="espPromos.length > 0 || allPromos.length > 0" class="fixed inset-x-0 w-full flex justify-center pointer-events-none" :style="addButtonStyle">
       <div
-          class="text-white flex p-4 shadow-md rounded-full bg-blue-400 ion-activatable overflow-hidden"
+          class="text-white flex p-4 shadow-md rounded-full bg-blue-400 ion-activatable overflow-hidden pointer-events-auto"
           @click="openModal"
       >
         <icon-custom icon="angle-small-up" size="2xl"/>
         <ion-ripple-effect/>
       </div>
-    </div>-->
+    </div>
 
   </ion-page>
 </template>

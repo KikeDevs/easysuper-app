@@ -102,6 +102,7 @@ async function userProfiles(): Promise<void> {
   if (resp.status === "error"){
     showToast(resp.message);
   }
+  showToast(resp.message);
 }
 
 // 👇 NUEVO: estado del permiso de ubicación
@@ -276,6 +277,7 @@ onIonViewDidEnter(async () => {
       <ion-toast
           :is-open="toast.show"
           :duration="3000"
+          position-anchor=""
           @didDismiss="toast.show = false"
           :message="toast.message"
       />
@@ -286,7 +288,7 @@ onIonViewDidEnter(async () => {
 
     </ion-content>
     <ion-footer class="ion-no-border">
-      <div class="w-full flex gap-2 px-2 pt-2" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
+      <div class="w-full flex gap-2 px-2 mt-2 mb-2" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
         <btn-primary shape="round" size="large" class="w-full" @click="editarPerfiles">
           <div class="flex items-center gap-2">
             <icon-custom :icon="editPerfil.icon"/>

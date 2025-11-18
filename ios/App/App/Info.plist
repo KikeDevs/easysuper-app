@@ -47,7 +47,7 @@
 	<true/>
 
 	<key>GMSApiKey</key>
-    <string>AIzaSyABD5DEzMWvKYKInVWatvx0mOMYTbsra1c</string>
+    <string>AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI</string>
 
 	<!-- Ubicación solo en uso (foreground) -->
 	<key>NSLocationWhenInUseUsageDescription</key>

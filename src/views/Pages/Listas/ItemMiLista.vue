@@ -25,7 +25,7 @@ const emit = defineEmits<{
              ]"
          :style="item.name_list === 'Hogar' || item.name_list === 'Oficina' ? {} : {backgroundColor: bg, color: fg}"
     >
-      <div class=" w-16 h-16 relative flex items-center rounded-full justify-center bg-black/10">
+      <div class=" w-16 h-16 relative flex items-center rounded-full justify-center">
         <img v-if="item.name_list === 'Hogar' || item.name_list === 'Oficina'" :src="item.name_list === 'Hogar' ? '/assets/images/listas/hogar.png' : '/assets/images/listas/oficina.png'" :alt="item.name_list">
         <icon-custom v-else icon="document-signed" size="3xl"/>
       </div>

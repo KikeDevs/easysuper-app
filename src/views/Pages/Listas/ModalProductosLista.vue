@@ -124,7 +124,7 @@ watch(isOpen, async (open) => {
               <ion-ripple-effect/>
             </div>
           </template>
-          <div class="w-full ml-1">
+          <div class="w-full px-1">
             <div class="border-1 border-gray-300 rounded-full flex gap-1 items-center pl-2 dark:bg-[#2a2a2a] dark:border-0">
               <icon-custom icon="search" size="md"/>
               <input
@@ -139,11 +139,9 @@ watch(isOpen, async (open) => {
             </div>
           </div>
           <template #end>
-            <div class="relative overflow-hidden flex p-1 ml-2 rounded-lg ion-activatable"
-                 @click="openModalDepartament">
+            <ion-button fill="clear" shape="circle" class="text-neutral-800 dark:text-white" @click="openModalDepartament">
               <icon-custom icon="bars-sort" size="xl"/>
-              <ion-ripple-effect/>
-            </div>
+            </ion-button>
           </template>
         </toolbar-custom>
         <toolbar-custom>
@@ -182,13 +180,20 @@ watch(isOpen, async (open) => {
           />
         </ion-refresher>
 
-        <item-producto-lista v-for="p in getArticulos" :item="p">
-          <div class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
-               @click="agregarProducto(p)"
-          >
-            <icon-custom icon="plus"/>
-          </div>
-        </item-producto-lista>
+        <TransitionGroup
+            name="list-fade"
+            tag="div"
+            class="flex flex-col"
+            appear
+        >
+          <item-producto-lista v-for="p in getArticulos" :item="p" :key="p.product_id">
+            <div class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
+                 @click="agregarProducto(p)"
+            >
+              <icon-custom icon="plus"/>
+            </div>
+          </item-producto-lista>
+        </TransitionGroup>
 
         <!-- Toast -->
         <ion-toast
@@ -202,6 +207,3 @@ watch(isOpen, async (open) => {
     </ion-page>
   </ion-modal>
 </template>
-
-<style scoped>
-</style>

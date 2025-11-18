@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   IonPage,
-  IonAvatar,
   IonHeader,
   IonTitle,
   IonContent,
@@ -16,13 +15,13 @@ import { useRouter } from "vue-router";
 import { getSaludo } from "@/utils/saludo";
 import { useUiStore } from "@/stores/statusbar";
 import { useProfileStore } from "@/stores/profile";
-import { colorFromTextStable } from "@/utils/colorFromText";
 
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import CardCustom from "@/views/Components/CardCustom.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
 import ModalIniciarCompra from "@/views/Pages/Compras/ModalIniciarCompra.vue";
 import ModalProductosHome from "@/views/Pages/Home/ModalProductosHome.vue";
+import AvatarPerfil from "@/views/Components/AvatarPerfil.vue";
 
 // -------- estado existente --------
 
@@ -41,16 +40,11 @@ function showToast(message: string) {
   toast.value.show = true;
 }
 
-function goConfigs(): void { router.push("configs"); }
 function goListas(): void { router.push("listas"); }
 function goOfertas(): void {
-  if (canSeeOfertas.value) router.push("ofertas");
+  if (canSeeOfertas.value) router.push('ofertas');
   else showToast("Sin la ubicacion no puede ver ofertas.");
 }
-
-const bg = computed(() =>
-    colorFromTextStable(profileStore.selected?.name_perfil ?? "")
-);
 
 const modalIniciar = ref<boolean>(false);
 function closeModal(): void {
@@ -97,15 +91,11 @@ onIonViewWillEnter(() => {
           </div>
         </ion-title>
         <template #end>
-          <div v-if="profileStore.locationGranted" class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"
-               @click="async () => await router.push('mapa')">
+          <ion-button fill="clear" shape="circle" class="text-neutral-800 dark:text-white" @click="async () => await router.push('mapa')">
             <icon-custom icon="marker" size="xl"/>
-            <ion-ripple-effect/>
-          </div>
+          </ion-button>
 
-          <ion-avatar class="w-8 h-8 flex items-center justify-center" @click="goConfigs" :style="{background: bg}">
-            <icon-custom icon="user" size="xl" class="text-white"/>
-          </ion-avatar>
+          <avatar-perfil/>
         </template>
       </toolbar-custom>
     </ion-header>
@@ -122,16 +112,16 @@ onIonViewWillEnter(() => {
         </div>
 
         <!-- Portada -->
-        <div class="flex-1 w-full h-full flex flex-col gap-5 justify-center">
+        <div class="flex-1 w-full h-full flex flex-col gap-5 mt-4">
           <div>
-            <h4 class="tracking-wide">
+            <h4 class="tracking-wide text-xl">
               ¡Hola
               <span class="font-bold text-blue-600 dark:text-white">{{ profileStore.selected?.name_perfil ?? '' }}</span>!
             </h4>
-            <p>{{ saludo }}</p>
+            <p class="text-lg">{{ saludo }}</p>
           </div>
 
-          <card-custom class="h-40 not-dark:bg-gray-50 relative" :ripple="true" @click="goListas">
+          <card-custom class="h-40 not-dark:bg-gray-50 relative mt-3" :ripple="true" @click="goListas">
             <div class="absolute inset-0">
               <img class="w-full h-full" src="/assets/images/home/Mis-Listas-2.png">
             </div>
@@ -144,7 +134,7 @@ onIonViewWillEnter(() => {
           <card-custom
               class="h-24 bg-blue-400 text-white dark:bg-blue-400 relative"
               :ripple="true"
-              @click="() => modalIniciar = true"
+              @click="modalIniciar = true"
           >
             <div class="absolute inset-0">
               <img src="/assets/images/home/Iniciar-Compra-2.png">
@@ -173,7 +163,6 @@ onIonViewWillEnter(() => {
 
       <modal-productos-home
           v-model:is-open="showBuscar"
-          :t-top="ui.toolbarPaddingTop"
           @close="showBuscar = false"
       />
 

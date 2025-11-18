@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {IonRippleEffect, IonContent, IonToast} from "@ionic/vue";
+import {IonContent, IonToast} from "@ionic/vue";
 import {ref, watch} from "vue";
 import {ListReboot} from "@/interfaces/types";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
@@ -51,22 +51,20 @@ watch(isOpen, async (open) => {
   <ion-modal
       v-model:is-open="isOpen"
       :backdrop-dismiss="false"
+      :initial-breakpoint="0.6"
       @didDismiss="emit('refresh')"
   >
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2 border-b-1 border-b-gray-400">
+      <toolbar-custom class="px-2">
         <ion-title>Reiniciar Lista</ion-title>
         <template #end>
-          <div class="relative w-8 h-8 overflow-hidden flex items-center justify-center mr-2 rounded-full ion-activatable"
-               @click="isOpen = false"
-          >
+          <ion-button fill="clear" shape="circle" class="text-neutral-800 dark:text-white" @click="isOpen = false">
             <icon-custom icon="cross-small"/>
-            <ion-ripple-effect/>
-          </div>
+          </ion-button>
         </template>
       </toolbar-custom>
     </ion-header>
-    <ion-content>
+    <ion-content :fullscreen="true">
       <div
           v-for="l in listsFinished"
           class="relative flex items-center gap-1 border-b-1 border-b-gray-400 py-2 px-3 transition-colors ease-in-out duration-300"
@@ -81,7 +79,7 @@ watch(isOpen, async (open) => {
           <p class="font-bold m-0 p-0 leading-none text-lg">{{l.name_list}}</p>
         </div>
 
-        <p class="absolute bottom-0 right-1 italic text-xs text-gray-300">{{formatFechaLarga(l.created_at)}}</p>
+        <p class="absolute bottom-0 right-2 italic text-xs text-gray-300">{{formatFechaLarga(l.created_at)}}</p>
       </div>
 
 
@@ -92,7 +90,7 @@ watch(isOpen, async (open) => {
           @didDismiss="toast.show = false"
       />
     </ion-content>
-    <ion-footer>
+    <ion-footer class="ion-no-border">
       <div class="w-full px-3 py-1 flex gap-1">
         <btn-secondary v-if="listSelect != null" @click="reiniciarLista('nueva')">Lista nueva</btn-secondary>
         <btn-primary shape="round" size="large" v-if="listSelect != null" @click="reiniciarLista('reiniciar')">Reiniciar lista</btn-primary>
@@ -102,10 +100,4 @@ watch(isOpen, async (open) => {
 </template>
 
 <style scoped>
-ion-modal{
-  --width: 90%;
-  --height: 60%;
-  --border-radius: 10px;
-  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
-}
 </style>

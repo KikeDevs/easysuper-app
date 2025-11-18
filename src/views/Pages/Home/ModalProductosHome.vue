@@ -5,7 +5,7 @@ import {
   IonModal,
   IonPage,
   IonRippleEffect,
-  IonToast, IonCheckbox
+  IonToast,
 } from "@ionic/vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
@@ -21,10 +21,17 @@ import ItemMiLista from "@/views/Pages/Listas/ItemMiLista.vue";
 import {colorFromTextStable} from "@/utils/colorFromText";
 import ModalAgregarLista from "@/views/Pages/Listas/ModalAgregarLista.vue";
 import {useProfileStore} from "@/stores/profile";
+import {useUiStore} from "@/stores/statusbar";
 
-const props = defineProps<{
-  tTop: number;
-}>()
+const ui = useUiStore();
+
+const addButtonStyle = computed(() => ({
+  bottom: (16 + ui.footerPaddingBottom) + "px", // 16px (bottom-4) + safe-area
+}));
+const contentStyle = computed(() => ({
+  // usamos la var interna de IonContent
+  "--padding-bottom": (ui.footerPaddingBottom + 16) + "px", // 16 extra para respiro
+}));
 
 const perfilId = useProfileStore().selected?.profile_id ?? 0;
 
@@ -217,14 +224,14 @@ watch(isOpen, async (open) => {
   >
     <ion-page id="main-content">
       <ion-header class="ion-no-border">
-        <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
+        <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
           <template #start>
             <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {isOpen = false}">
               <icon-custom icon="arrow-small-left" size="3xl"/>
               <ion-ripple-effect/>
             </div>
           </template>
-          <div class="w-full ml-1">
+          <div class="w-full px-1">
             <div class="border-1 border-gray-300 rounded-full flex gap-1 items-center pl-2 dark:bg-[#2a2a2a] dark:border-0">
               <icon-custom icon="search" size="md"/>
               <input
@@ -239,11 +246,9 @@ watch(isOpen, async (open) => {
             </div>
           </div>
           <template #end>
-            <div class="relative overflow-hidden flex p-1 ml-2 rounded-lg ion-activatable"
-                 @click="openModalDepartament">
+            <ion-button fill="clear" shape="circle" class=" text-neutral-800 dark:text-white" @click="openModalDepartament">
               <icon-custom icon="bars-sort" size="xl"/>
-              <ion-ripple-effect/>
-            </div>
+            </ion-button>
           </template>
         </toolbar-custom>
         <toolbar-custom>
@@ -272,7 +277,7 @@ watch(isOpen, async (open) => {
         </toolbar-custom>
       </ion-header>
 
-      <ion-content :fullscreen="true" class="ion-padding">
+      <ion-content :fullscreen="true" class="ion-padding" :class="contentStyle">
 
         <item-producto-lista v-if="getArticulos.length > 0" v-for="p in getArticulos" :item="p">
           <div class="w-fit h-fit flex text-white p-2 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
@@ -291,16 +296,27 @@ watch(isOpen, async (open) => {
         <div v-if="getArticulos.length == 0 && brands.length > 0" class="flex flex-col gap-2">
           <p class="text-blue-400 dark:text-white">Nuestra recomendación:</p>
           <div class="grid grid-cols-3 gap-2">
-            <div v-for="bn in brandsNormales">
-              {{bn.name_brand}}
+            <div v-for="bp in brandsPatrocinios">
+              {{bp.name_brand}}
             </div>
           </div>
-          <div v-for="bp in brandsPatrocinios">
-            {{bp.name_brand}}
+          <div class="flex items-center w-full gap-1">
+            <div class="flex-1 w-full rounded-full bg-blue-400 dark:bg-gray-300 h-[2px]"/>
+            <p>otras marcas</p>
+            <div class="flex-1 w-full rounded-full bg-blue-400 h-[2px] dark:bg-gray-300"/>
+          </div>
+          <div
+              v-for="bn in brandsNormales"
+              class="flex items-center gap-3 h-fit"
+          >
+            <div class="w-6 h-6 border-2 border-blue-400 dark:border-gray-700 rounded-full bg-transparent"/>
+            <div class="flex-1 w-full h-full border-b-2 border-b-blue-400 dark:border-b-gray-700 py-2">
+              <p>{{bn.name_brand}}</p>
+            </div>
           </div>
         </div>
 
-        <div class="h-24"/>
+        <div class="h-20"/>
 
         <!-- Modal Agregar a Lista -->
         <ion-modal
@@ -308,7 +324,7 @@ watch(isOpen, async (open) => {
             @didDismiss="() => { showAgregar = false; productsSeleccionados = []}"
         >
           <ion-header class="ion-no-border">
-            <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
+            <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
               <ion-title>Guardar en:</ion-title>
               <template #start>
                 <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {showAgregar = false}">
@@ -327,9 +343,9 @@ watch(isOpen, async (open) => {
               />
             </div>
           </ion-content>
-          <ion-footer class="ion-no-border mb-8">
-            <div class="w-full px-2 py-1 flex justify-end">
-              <btn-primary shape="round" size="large" @click="modalAgregarLista = true">
+          <ion-footer class="ion-no-border">
+            <div class="w-full px-2 pt-2 flex justify-end" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
+              <btn-primary shape="round" size="large" class="mt-2 mb-2" @click="modalAgregarLista = true">
                 <div class="flex gap-2 items-center">
                   <icon-custom icon="plus"/>
                   <p>Agregar Lista</p>
@@ -345,7 +361,7 @@ watch(isOpen, async (open) => {
             @didDismiss="modalSeleccionados = false"
         >
           <ion-header class="ion-no-border">
-            <toolbar-custom class="px-2" :style="{paddingTop: tTop + 'px'}">
+            <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
               <ion-title>Seleccionados</ion-title>
               <template #start>
                 <div class="flex p-1.5 rounded-full ion-activatable overflow-hidden relative" @click="() => {modalSeleccionados = false}">
@@ -365,9 +381,9 @@ watch(isOpen, async (open) => {
               </div>
             </item-producto-lista>
           </ion-content>
-          <ion-footer class="mb-8 ion-no-border">
-            <div class="w-full px-2 py-2">
-              <btn-primary shape="round" size="large" @click="openAgregarSeleccionados">Agregar a una lista</btn-primary>
+          <ion-footer class="ion-no-border">
+            <div class="w-full px-2" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
+              <btn-primary shape="round" size="large" class="mt-2 mb-2" @click="openAgregarSeleccionados">Agregar a una lista</btn-primary>
             </div>
           </ion-footer>
         </ion-modal>
@@ -388,7 +404,8 @@ watch(isOpen, async (open) => {
 
       </ion-content>
 
-      <div class="fixed z-10 bottom-10 right-5 transition-opacity ease-in-out duration-500"
+      <div class="fixed z-10 right-5 transition-opacity ease-in-out duration-500"
+           :style="addButtonStyle"
            :class="[productsSeleccionados.length > 1 ? 'opacity-100' : 'opacity-0']"
       >
         <div class="relative p-3 w-fit flex rounded-full overflow-hidden ion-activatable bg-blue-400 shadow-lg dark:bg-[#2a2a2a] dark:shadow-none" @click="modalSeleccionados = true">

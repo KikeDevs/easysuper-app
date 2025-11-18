@@ -45,9 +45,7 @@ watch(isOpen, (open) => {
   <ion-modal
       v-model:is-open="isOpen"
       @didDismiss="emit('close')"
-      :initial-breakpoint="0.75"
-      :breakpoints="[0.75]"
-
+      :initial-breakpoint="[0.7]"
   >
     <ion-content :fullscreen="true" class="ion-padding">
       <p class="font-bold">Elige una de tus listas</p>

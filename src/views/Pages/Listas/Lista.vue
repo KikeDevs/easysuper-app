@@ -27,6 +27,16 @@ const initialLoading = ref(false);
 
 const ui = useUiStore();
 
+const contentStyle = computed(() => ({
+  // usamos la var interna de IonContent
+  "--padding-bottom": (ui.footerPaddingBottom + 16) + "px", // 16 extra para respiro
+}));
+
+const addButtonStyle = computed(() => ({
+  bottom: (16 + ui.footerPaddingBottom) + "px", // 16px (bottom-4) + safe-area
+}));
+
+
 const showSearch = ref(false);
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -115,7 +125,7 @@ const grupos = computed<Group[]>(() => {
       </toolbar-custom>
     </ion-header>
 
-    <ion-content class="ion-padding">
+    <ion-content class="ion-padding" :style="contentStyle">
       <ion-refresher slot="fixed" @ionRefresh="doRefresh">
         <ion-refresher-content
             pulling-text="Desliza para recargar"
@@ -129,28 +139,36 @@ const grupos = computed<Group[]>(() => {
         <p class="not-dark:text-blue-400">Lista Vacía</p>
       </div>
 
-      <div v-else v-for="g in grupos" :key="g.id">
-        <div class="mt-3 pl-1 rounded-t-lg bg-blue-500 text-white dark:bg-[#2a2a2a]">
-          <p class="text-lg font-semibold">{{ g.name }}</p>
-        </div>
+      <TransitionGroup
+          name="list-fade"
+          tag="div"
+          appear
+          class="flex flex-col"
+      >
+        <div v-for="g in grupos" :key="g.id">
+          <div class="mt-3 pl-1 rounded-t-lg bg-blue-500 text-white dark:bg-[#2a2a2a]">
+            <p class="text-lg font-semibold">{{ g.name }}</p>
+          </div>
 
-        <item-producto-lista
-            v-for="p in g.items"
-            :key="p.product_id"
-            :itemDetails="p"
-        >
-          <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
-               :style="{background: colorFromTextStable(p.name_perfil)}">
-            <icon-custom icon="user" size="md"/>
-          </div>
-          <!-- eliminar -->
-          <div class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
-               @click="deleteProducto(p)">
-            <icon-custom icon="trash"/>
-          </div>
-        </item-producto-lista>
-      </div>
-      <div class="h-20"/>
+          <item-producto-lista
+              v-for="p in g.items"
+              :key="p.product_id"
+              :itemDetails="p"
+          >
+            <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
+                 :style="{background: colorFromTextStable(p.name_perfil)}">
+              <icon-custom icon="user" size="md"/>
+            </div>
+            <!-- eliminar -->
+            <div class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
+                 @click="deleteProducto(p)">
+              <icon-custom icon="trash"/>
+            </div>
+          </item-producto-lista>
+        </div>
+      </TransitionGroup>
+
+      <div class="h-16"/>
       <ion-toast
           :is-open="toast.show"
           :duration="3000"
@@ -163,7 +181,9 @@ const grupos = computed<Group[]>(() => {
     </ion-content>
 
     <!-- Botón agregar -->
-    <div class="fixed z-10 bottom-10 right-4 flex justify-center">
+    <div class="fixed z-10 right-4 flex justify-center"
+         :style="addButtonStyle"
+    >
       <btn-primary
           shape="round"
           size="large"
@@ -186,4 +206,3 @@ const grupos = computed<Group[]>(() => {
     />
   </ion-page>
 </template>
-

@@ -8,6 +8,8 @@
             "MiSans", "OPPO Sans", "OnePlus Sans", "SamsungOne",
             Roboto, "Noto Sans",
             "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --ion-safe-area-top:    0;
+    --ion-safe-area-bottom: 0;
 }
 
 *,
@@ -73,7 +75,21 @@ ion-toast{
     --border-radius: 20px;
 }
 
-ion-content{
-    --background: transparent;
-    --ion-background-color: transparent;
+ion-content {
+    --padding-top:    var(--ion-safe-area-top);
+    --padding-bottom: var(--ion-safe-area-bottom);
 }
+
+ion-header {
+    padding-top: var(--ion-safe-area-top);
+}
+
+ion-footer {
+    padding-bottom: var(--ion-safe-area-bottom);
+}
+
+/*transiciones*/
+.list-fade-enter-from { opacity: 0; transform: translateY(6px); }
+.list-fade-enter-active { transition: opacity .4s ease, transform .4s ease; }
+.list-fade-enter-to { opacity: 1; transform: translateY(0); }
+.list-fade-move { transition: transform .3s ease; }

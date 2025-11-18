@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {IonPage, IonContent, IonBackButton, IonHeader, IonToast, onIonViewDidEnter, alertController} from "@ionic/vue";
+import {IonPage, IonContent, IonBackButton, IonHeader, IonToast, onIonViewDidEnter, alertController, IonAlert} from "@ionic/vue";
 import ItemUser from "@/views/Components/ItemUser.vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import CardCustom from "@/views/Components/CardCustom.vue";
@@ -13,6 +13,9 @@ import {useRouter} from "vue-router";
 import {useAuthStore} from "@/stores/auth";
 import {logOutUser} from "@/api/Login";
 import {useUiStore} from "@/stores/statusbar";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+
+const initLoading = ref(false);
 
 const ui = useUiStore()
 const router = useRouter();
@@ -64,8 +67,15 @@ async function cerrarSesion(): Promise<void> {
 }
 
 onIonViewDidEnter(async () => {
-  await ui.refresh();
-  await Promise.all([getPerfiles()]);
+  initLoading.value = true;
+  try {
+    await Promise.all([
+        getPerfiles(),
+      ui.refresh()
+    ]);
+  } finally {
+    initLoading.value = false;
+  }
 })
 
 </script>
@@ -119,6 +129,8 @@ onIonViewDidEnter(async () => {
           @didDismiss="toast.show = false"
           :message="toast.message"
       />
+
+      <loader-normal :open="initLoading"/>
     </ion-content>
   </ion-page>
 </template>

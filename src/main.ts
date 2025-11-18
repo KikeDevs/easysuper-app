@@ -88,6 +88,7 @@ async function initSocialLogin(): Promise<void> {
         await SocialLogin.initialize({
             google:{
                 webClientId:WEB_CLIENT_ID,
+                mode:'online'
             }
         });
     }

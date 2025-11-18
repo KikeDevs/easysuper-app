@@ -1,7 +1,7 @@
 import {api} from "@/services/api";
 import {Departamento} from "@/interfaces/types";
 import {Product} from "@/interfaces/products";
-import {Brand} from "@/interfaces/brands";
+import {Brand, BrandSuper} from "@/interfaces/brands";
 import {data} from "autoprefixer";
 import {error} from "@capacitor/assets/dist/util/log";
 
@@ -54,6 +54,7 @@ export async function getProducts(deparId: number,buscar?: string): Promise<Prod
 interface BrandResponse {
     status: 'ok' | 'error' | 'warning';
     brands?: Brand[];
+    brands_super?: BrandSuper[];
     message: string;
 }
 
@@ -62,6 +63,18 @@ export async function getBrands(): Promise<BrandResponse> {
         const resp = await api.post<BrandResponse>('brands', {});
         return resp.data;
     } catch (error: any){
+        const message = error?.response?.data?.message
+        ?? error?.message
+        ?? "Error de red al registrar";
+        return { status: "error", message };
+    }
+}
+
+export async function getBrandsSuper(): Promise<BrandResponse> {
+    try {
+        const resp = await api.post<BrandResponse>('brands-super',{});
+        return resp.data;
+    } catch (error: any) {
         const message = error?.response?.data?.message
         ?? error?.message
         ?? "Error de red al registrar";

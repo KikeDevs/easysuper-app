@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, isPlatform, IonHeader, IonBackButton, IonToast, IonRippleEffect, useIonRouter, onIonViewDidEnter
+  IonPage, IonContent, isPlatform, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter
 } from "@ionic/vue";
 import InputContainer from "@/views/Components/InputContainer.vue";
 import InputCustom from "@/views/Components/InputCustom.vue";
@@ -16,7 +16,7 @@ import {useUiStore} from "@/stores/statusbar";
 import {loginWithGoogle} from "@/api/Login";
 
 const isIos = computed(() => isPlatform('ios'));
-const inRouter = useIonRouter();
+const router = useIonRouter();
 const ui = useUiStore();
 
 const newUser = ref({
@@ -31,15 +31,8 @@ const inputPass = ref({
   eye: false
 });
 
-const toast = ref({
-  show: false,
-  message: '',
-  color: 'primary' as 'primary' | 'success' | 'danger' | 'warning' | 'medium'
-});
-
-function showToast(message: string, color: typeof toast.value.color = 'primary') {
-  toast.value = { show: true, message, color };
-}
+const toast = ref({ show: false, message: "" });
+const showToast = (message: string) => { toast.value = { show: true, message }; };
 
 function verPass(): void {
   inputPass.value.eye = !inputPass.value.eye;
@@ -63,7 +56,7 @@ const loading = ref(false);
 
 async function nuevoUser(): Promise<void> {
   if (!canSubmit.value) {
-    showToast(!passMatch.value ? 'Las contraseñas no coinciden.' : 'Revisa los campos obligatorios.', 'warning');
+    showToast(!passMatch.value ? 'Las contraseñas no coinciden.' : 'Revisa los campos obligatorios.');
     return;
   }
 
@@ -77,12 +70,12 @@ async function nuevoUser(): Promise<void> {
         await useAuthStore().setSession(resp.token, resp.user);
       } else {
         // Por si el backend aún no devuelve token/user
-        showToast('El servidor no devolvió token/usuario.', 'danger');
+        showToast('El servidor no devolvió token/usuario.');
         return;
       }
 
       // 2) Limpia form
-      showToast(resp.message || 'Usuario creado correctamente.', 'success');
+      showToast(resp.message || 'Usuario creado correctamente.');
       newUser.value = { username: '', email: '', password: '' };
       confirmPass.value = '';
 
@@ -91,20 +84,20 @@ async function nuevoUser(): Promise<void> {
       prof.clear()
 
       // 4) Ve directo al selector de perfiles
-      inRouter.navigate('/users');  // <- tu ruta del selector
+      router.replace('/users');  // <- tu ruta del selector
 
       return;
     }
 
     if (resp.status === 'warning') {
-      showToast(resp.message || 'El usuario ya existe.', 'warning');
+      showToast(resp.message || 'El usuario ya existe.');
       return;
     }
 
-    showToast(resp.message || 'No se pudo registrar.', 'danger');
+    showToast(resp.message || 'No se pudo registrar.');
   } catch (e: any) {
     const msg = e?.response?.data?.message || e?.message || 'Error al registrar.';
-    showToast(msg, 'danger');
+    showToast(msg);
   } finally {
     loading.value = false;
   }
@@ -121,7 +114,7 @@ async function loginGoogle(): Promise<void> {
         await useAuthStore().setSession(resp.token, resp.user);
       }
       showToast("Sesión iniciada con Google.");
-      inRouter.replace("/users");
+      router.replace("/users");
       return;
     }
 
@@ -153,7 +146,7 @@ onIonViewDidEnter(async () => {
 
     <ion-content class="ion-padding">
       <div class="w-full h-full flex flex-col justify-center items-center gap-3">
-        <h1 class="font-bold not-dark:text-blue-400">CREAR CUENTA</h1>
+        <h1 class="font-bold text-3xl not-dark:text-blue-400">CREAR CUENTA</h1>
 
         <div class="w-full flex flex-col gap-1 justify-center items-center px-3">
           <p>Regístrate para continuar</p>
@@ -240,14 +233,11 @@ onIonViewDidEnter(async () => {
         </div>
       </div>
 
-      <!-- TOAST GLOBAL -->
       <ion-toast
           :is-open="toast.show"
+          :duration="3000"
           :message="toast.message"
-          :color="toast.color"
-          :duration="2500"
-          @did-dismiss="toast.show = false"
-          position="bottom"
+          @didDismiss="toast.show = false"
       />
     </ion-content>
   </ion-page>
