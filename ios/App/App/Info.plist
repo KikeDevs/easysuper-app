@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>easy-super-app</string>
+	<string>EasySuper</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,20 +45,14 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-
 	<key>GMSApiKey</key>
-    <string>AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI</string>
-
-	<!-- Ubicación solo en uso (foreground) -->
+	<string>AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Usamos tu ubicación para mostrar supermercados y ofertas cercanas.</string>
-
-	<!-- (Opcional) iOS 14+ precisión alta temporal si algún día la usas con plugin nativo -->
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
-	<key>PreciseOffers</key>
-	<string>Necesitamos precisión alta por unos momentos para ubicar con exactitud el supermercado seleccionado.</string>
+		<key>PreciseOffers</key>
+		<string>Necesitamos precisión alta por unos momentos para ubicar con exactitud el supermercado seleccionado.</string>
 	</dict>
-
 </dict>
 </plist>
