@@ -41,7 +41,7 @@ const emit = defineEmits<{
         <ion-title>Agregar lista</ion-title>
         <template #end>
           <ion-button fill="clear" shape="circle" @click="isOpen = false">
-            <icon-custom icon="cross-small"/>
+            <icon-custom icon="cross"/>
           </ion-button>
         </template>
       </toolbar-custom>

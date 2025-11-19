@@ -223,12 +223,12 @@ onIonViewDidEnter(async () => {
               </div>
             </btn-secondary>
 
-            <btn-secondary v-if="isIos" class="w-full">
+            <!--<btn-secondary v-if="isIos" class="w-full">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/logotipo-de-apple.png" alt="">
                 Continuar con Apple
               </div>
-            </btn-secondary>
+            </btn-secondary>-->
           </div>
         </div>
       </div>
