@@ -22,6 +22,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>GMSApiKey</key>
 	<string>AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI</string>
+	<key>GIDClientID</key>
+	<string>542553177675-ql4kq4ac5oul05vcf09g3kee0pqtq58v.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
@@ -54,5 +56,22 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.easysuper.app</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>google</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.542553177675-ql4kq4ac5oul05vcf09g3kee0pqtq58v</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

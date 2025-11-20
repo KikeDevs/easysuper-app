@@ -184,7 +184,7 @@ onIonViewDidEnter(async ()=> {
               <div class="w-1/4 h-[2px] bg-orange-400"></div>
             </div>
 
-            <btn-secondary v-if="!isIos" class="w-full mt-3" @click="loginGoogle">
+            <btn-secondary class="w-full mt-3" @click="loginGoogle">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/google.png" alt="">
                 Continuar con Google
