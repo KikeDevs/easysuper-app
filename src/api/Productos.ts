@@ -35,21 +35,31 @@ interface ProductResponse {
         }
 }
 
-export async function getProducts(deparId: number,buscar?: string): Promise<ProductResponse> {
+export async function getProducts(
+    deparId: number,
+    buscar?: string,
+    brandId?: number | null
+): Promise<ProductResponse> {
     try {
         const resp = await api.post<ProductResponse>('products', {
             departament_id: deparId,
             buscar: buscar,
+            brand_id: brandId ?? null,
         });
+
         return resp.data;
+
     } catch (error: any) {
-        const message = error?.response?.data?.message
-        ?? error?.message
-        ?? "Error de red al registrar";
+        const message =
+            error?.response?.data?.message ??
+            error?.message ??
+            "Error de red al registrar";
+
         return { status: "error", message };
     }
-
 }
+
+
 
 interface BrandResponse {
     status: 'ok' | 'error' | 'warning';

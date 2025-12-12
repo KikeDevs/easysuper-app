@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {Product, ProductList} from "@/interfaces/types";
+import {Product, ProductList} from "@/interfaces/products";
 import {computed} from "vue";
 
 const props = defineProps<{
@@ -46,7 +46,21 @@ const deptIcon = computed<string>(() => {
   <div class="relative flex items-center gap-2 py-2.5 border-b border-b-gray-400">
     <!-- avatar / icono -->
     <div class="bg-gray-200 rounded-full w-14 h-14 overflow-hidden flex justify-center items-center">
-      <icon-custom :icon="deptIcon" size="3xl" class="not-dark:text-blue-500 dark:text-gray-800"/>
+      <!-- LOGO: solo si hay marca y patrocinio -->
+      <img
+          v-if="item?.brand && item?.patrocinio === 1"
+          :src="'http://srv1170449.hstgr.cloud/images/brands/' + item.brand + '.png'"
+          :alt="item.brand"
+          class="w-full h-full object-cover"
+      />
+
+      <!-- ICONO: todos los demás casos -->
+      <icon-custom
+          v-else
+          :icon="deptIcon"
+          size="3xl"
+          class="not-dark:text-blue-500 dark:text-gray-800"
+      />
     </div>
 
     <!-- texto -->

@@ -174,11 +174,16 @@ type Group = { id: number; name: string; items: ProductList[] };
 
 const grupos = computed<Group[]>(() => {
   const byDept = new Map<number, ProductList[]>();
+
   for (const p of listDetails.value) {
+    // Solo productos NO seleccionados
+    if (p.status_pro === 1) continue;
+
     const id = (p as any).departament_id ?? 0; // 0 = “Otros”
     if (!byDept.has(id)) byDept.set(id, []);
     byDept.get(id)!.push(p);
   }
+
   const sortedIds = Array.from(byDept.keys()).sort((a, b) => a - b);
   return sortedIds.map(id => ({
     id,
@@ -187,6 +192,9 @@ const grupos = computed<Group[]>(() => {
   }));
 });
 
+const carrito = computed<ProductList[]>(() =>
+    listDetails.value.filter(p => p.status_pro === 1)
+);
 
 </script>
 
@@ -235,6 +243,34 @@ const grupos = computed<Group[]>(() => {
           </item-producto-lista>
         </div>
       </TransitionGroup>
+
+      <!--crear lista "Carrito" con los productos ya check (status_pro = 1)-->
+      <div v-if="carrito.length" class="mt-6">
+        <div class="mt-3 pl-1 rounded-t-lg bg-green-600 text-white dark:bg-[#2a2a2a]">
+          <p class="text-lg font-semibold">
+            Carrito ({{ carrito.length }})
+          </p>
+        </div>
+
+        <item-producto-lista
+            v-for="p in carrito"
+            :key="'cart-' + versionKey + '-' + p.product_id"
+            :itemDetails="p"
+            class="transition-opacity ease-in-out duration-300"
+            :class="[p.status_pro === 1 ? 'opacity-100' : 'opacity-40']"
+            @click="productoSeleccionado(p)"
+        >
+          <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
+               :style="{background: colorFromTextStable(p.name_perfil)}">
+            <icon-custom icon="user" size="md"/>
+          </div>
+
+          <div
+              class="w-6 h-6 mr-2 rounded-full"
+              :class="[p.status_pro === 0 ? 'bg-gray-500' : 'bg-green-600']"
+          />
+        </item-producto-lista>
+      </div>
 
 
       <ion-modal

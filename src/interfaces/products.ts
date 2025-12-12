@@ -4,6 +4,7 @@ export interface Product {
     unit: string | null;
     content: string | null;
     brand: string | null;
+    patrocinio: number;
     subcategory: string;
     category: string;
     departament_id: number | null;

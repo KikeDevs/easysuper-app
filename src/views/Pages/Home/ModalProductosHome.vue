@@ -46,6 +46,13 @@ const showToast = (message: string) => { toast.value = { show: true, message }; 
 const showAgregar = ref<boolean>(false);
 const modalAgregarLista = ref<boolean>(false);
 
+
+const selectedBrand = ref<Brand | null>(null);
+
+const brandLabel = computed(() =>
+    selectedBrand.value ? selectedBrand.value.name_brand : "Todas las marcas"
+);
+
 const searchE1 = ref<HTMLInputElement | null>(null);
 function focusSearch(): void {
   requestAnimationFrame(() => {
@@ -95,6 +102,9 @@ async function selectDepartament(d: Departamento | null): Promise<void> {
   departamentSelect.value = d;
   showDepartament.value = false;
 
+  // opcional: resetear marca al cambiar de depto
+  selectedBrand.value = null;
+
   const depId = d?.departament_id ?? 0;
   if (searchBar.value.trim() !== "") {
     await searchArticulos(depId);
@@ -103,23 +113,44 @@ async function selectDepartament(d: Departamento | null): Promise<void> {
   }
 }
 
+
 const getArticulos = ref<Product[]>([]);
 async function allArticulos(departamentId?: number): Promise<void> {
   getArticulos.value = [];
-  const resp = await getProducts(departamentId ?? 0);
-  if (resp.status == 'ok') {
+  const brandId = selectedBrand.value?.brand_id ?? null;
+
+  const resp = await getProducts(departamentId ?? 0, "", brandId);
+  if (resp.status == "ok") {
     getArticulos.value = resp.products ? resp.products : [];
   }
+
+  showToast(resp.message)
 }
 
 const searchBar = ref('');
 async function searchArticulos(departamentId?: number): Promise<void> {
   getArticulos.value = [];
-  const resp = await getProducts(departamentId ?? 0,searchBar.value);
-  if (resp.status == 'ok') {
+  const brandId = selectedBrand.value?.brand_id ?? null;
+
+  const resp = await getProducts(departamentId ?? 0, searchBar.value, brandId);
+  if (resp.status == "ok") {
     getArticulos.value = resp.products ? resp.products : [];
   }
 }
+
+async function filtrarPorBrand(b: Brand): Promise<void> {
+  selectedBrand.value = b;
+
+  const depId = departamentSelect.value?.departament_id ?? 0;
+  const q = searchBar.value.trim();
+
+  if (q === "") {
+    await allArticulos(depId);
+  } else {
+    await searchArticulos(depId);
+  }
+}
+
 
 let debounceId: number | null = null;
 function debouncedSearch(): void {
@@ -210,10 +241,12 @@ watch(isOpen, async (open) => {
     searchBar.value = '';
     getArticulos.value = [];
     departamentSelect.value = null;
+    selectedBrand.value = null; // 👈 reset marca
     productsSeleccionados.value = [];
-    await Promise.all([obDepartamentos(), cargarMisListas(),obBrands()]);
+    await Promise.all([obDepartamentos(), cargarMisListas(), obBrands()]);
   }
 });
+
 </script>
 
 <template>
@@ -296,8 +329,10 @@ watch(isOpen, async (open) => {
         <div v-if="getArticulos.length == 0 && brands.length > 0" class="flex flex-col gap-2">
           <p class="text-blue-400 dark:text-white">Nuestra recomendación:</p>
           <div class="grid grid-cols-3 gap-2">
-            <div v-for="bp in brandsPatrocinios">
-              {{bp.name_brand}}
+            <div v-for="bp in brandsPatrocinios" @click="filtrarPorBrand(bp)">
+              <div class="w-full rounded-xl overflow-hidden shadow-md">
+                <img :src="'http://srv1170449.hstgr.cloud/images/brands/' + bp.name_brand + '.png'" :alt="bp.name_brand" loading="lazy">
+              </div>
             </div>
           </div>
           <div class="flex items-center w-full gap-1">
@@ -308,6 +343,7 @@ watch(isOpen, async (open) => {
           <div
               v-for="bn in brandsNormales"
               class="flex items-center gap-3 h-fit"
+              @click="filtrarPorBrand(bn)"
           >
             <div class="w-6 h-6 border-2 border-blue-400 dark:border-gray-700 rounded-full bg-transparent"/>
             <div class="flex-1 w-full h-full border-b-2 border-b-blue-400 dark:border-b-gray-700 py-2">
@@ -393,6 +429,7 @@ watch(isOpen, async (open) => {
             :is-open="toast.show"
             :duration="3000"
             :message="toast.message"
+            position="top"
             @didDismiss="toast.show = false"
         />
 
