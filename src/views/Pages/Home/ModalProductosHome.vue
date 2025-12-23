@@ -22,9 +22,10 @@ import {colorFromTextStable} from "@/utils/colorFromText";
 import ModalAgregarLista from "@/views/Pages/Listas/ModalAgregarLista.vue";
 import {useProfileStore} from "@/stores/profile";
 import {useUiStore} from "@/stores/statusbar";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 
 const ui = useUiStore();
-
+const initialLoading = ref(false);
 const addButtonStyle = computed(() => ({
   bottom: (16 + ui.footerPaddingBottom) + "px", // 16px (bottom-4) + safe-area
 }));
@@ -119,12 +120,20 @@ async function allArticulos(departamentId?: number): Promise<void> {
   getArticulos.value = [];
   const brandId = selectedBrand.value?.brand_id ?? null;
 
-  const resp = await getProducts(departamentId ?? 0, "", brandId);
-  if (resp.status == "ok") {
-    getArticulos.value = resp.products ? resp.products : [];
+  initialLoading.value = true;
+
+  try {
+    const resp = await getProducts(departamentId ?? 0, "", brandId);
+    if (resp.status == "ok") {
+      getArticulos.value = resp.products ? resp.products : [];
+      if (brandId != null && getArticulos.value.length == 0) {
+        showToast("No se encontraron productos para esta marca.")
+      }
+    }
+  } finally {
+    initialLoading.value = false;
   }
 
-  showToast(resp.message)
 }
 
 const searchBar = ref('');
@@ -429,14 +438,19 @@ watch(isOpen, async (open) => {
             :is-open="toast.show"
             :duration="3000"
             :message="toast.message"
-            position="top"
+            position="middle"
             @didDismiss="toast.show = false"
+            class="custom-toast"
         />
 
         <modal-agregar-lista
             v-model:is-open="modalAgregarLista"
             v-model:text-input="nameList"
             @agregar="agregarLista"
+        />
+
+        <loader-normal
+            :open="initialLoading"
         />
 
       </ion-content>

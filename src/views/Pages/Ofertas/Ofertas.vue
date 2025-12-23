@@ -47,7 +47,7 @@ async function selectBrandSuper(id: number): Promise<void> {
 }
 
 function urlPromos(img_promo: string): string {
-  const BASE = 'https://darkgrey-jaguar-767398.hostingersite.com/';
+  const BASE = 'http://srv1170449.hstgr.cloud/';
   const CARP = 'ofertas/';
 
   const brand = brandsSupers.value.find(b => b.brand_id === selectedBrandSuper.value);

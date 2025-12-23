@@ -12,6 +12,7 @@ import {Departamento} from "@/interfaces/types";
 import {addProduct, getProducts} from "@/api/Productos";
 import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
 import {useProfileStore} from "@/stores/profile";
+import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 
 const props = defineProps<{
   userlist_id: number,
@@ -23,6 +24,8 @@ const isOpen = defineModel<boolean>('is-open', { default: false });
 const emit = defineEmits<{
   (e: 'refresh'): void;
 }>();
+
+const initialLoading = ref(false);
 
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -55,9 +58,14 @@ async function selectDepartament(d: Departamento | null): Promise<void> {
 const getArticulos = ref<Product[]>([]);
 async function allArticulos(departamentId?: number): Promise<void> {
   getArticulos.value = [];
-  const resp = await getProducts(departamentId ?? 0);
-  if (resp.status == 'ok') {
-    getArticulos.value = resp.products ? resp.products : [];
+  initialLoading.value = true;
+  try {
+    const resp = await getProducts(departamentId ?? 0);
+    if (resp.status == 'ok') {
+      getArticulos.value = resp.products ? resp.products : [];
+    }
+  } finally {
+    initialLoading.value = false;
   }
 }
 
@@ -87,11 +95,36 @@ function onSearchInput(e: Event): void {
   debouncedSearch();
 }
 
+
+const dialog = ref({
+  open: false,
+  title: "Listo",
+  message: ""
+});
+
+let dialogTimer: number | null = null;
+function openMiniDialog(message: string, title = "Listo"): void {
+  dialog.value.title = title;
+  dialog.value.message = message;
+  dialog.value.open = true;
+
+  if (dialogTimer) window.clearTimeout(dialogTimer);
+  dialogTimer = window.setTimeout(() => {
+    dialog.value.open = false;
+  }, 3000);
+}
+
 async function agregarProducto(p: Product): Promise<void> {
   const perfilId = useProfileStore().selected?.profile_id ?? 0;
-  const resp = await addProduct(props.userlist_id,p.product_id,perfilId);
-  showToast(resp.message)
+  const resp = await addProduct(props.userlist_id, p.product_id, perfilId);
+
+  // si quieres seguir usando toast, déjalo:
+  // showToast(resp.message)
+
+  openMiniDialog(resp.message, resp.status === "ok" ? "Agregado" : "Ups");
 }
+
+
 async function doRefresh(ev: CustomEvent): Promise<void> {
   try {
     await allArticulos();
@@ -99,6 +132,7 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
     await (ev.target as HTMLIonRefresherElement).complete();
   }
 }
+
 
 watch(isOpen, async (open) => {
   if (open) {
@@ -187,8 +221,9 @@ watch(isOpen, async (open) => {
             appear
         >
           <item-producto-lista v-for="p in getArticulos" :item="p" :key="p.product_id">
-            <div class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
-                 @click="agregarProducto(p)"
+            <div
+                class="w-fit h-fit flex text-white p-2 mr-3 rounded-full not-dark:bg-blue-500 dark:bg-[#2a2a2a]"
+                @click="agregarProducto(p)"
             >
               <icon-custom icon="plus"/>
             </div>
@@ -199,11 +234,60 @@ watch(isOpen, async (open) => {
         <ion-toast
             :is-open="toast.show"
             :duration="3000"
+            position="middle"
+            :translucent="true"
             :message="toast.message"
             @didDismiss="toast.show = false"
+            class="custom-toast"
         />
 
       </ion-content>
     </ion-page>
+
+    <ion-modal
+        :is-open="dialog.open"
+        :backdrop-dismiss="true"
+        :show-backdrop="true"
+        class="mini-dialog"
+        @didDismiss="dialog.open = false"
+    >
+      <div class="mini-card">
+        <p class="mini-title">{{ dialog.title }}</p>
+        <p class="mini-msg">{{ dialog.message }}</p>
+      </div>
+    </ion-modal>
+
+    <loader-normal :open="initialLoading"/>
+
   </ion-modal>
 </template>
+<style scoped>
+.mini-dialog {
+  --width: 85%;
+  --max-width: 320px;
+  --height: auto;
+  --border-radius: 18px;
+  --backdrop-opacity: 0.35;
+  --background: oklch(62.3% 0.214 259.815);
+}
+
+.mini-card {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mini-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  color: white;
+}
+
+.mini-msg {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
+
+</style>

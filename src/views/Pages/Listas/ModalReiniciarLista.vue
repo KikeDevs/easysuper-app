@@ -9,11 +9,14 @@ import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import {getListsFinished, rebootList} from "@/api/Lists";
 import {useProfileStore} from "@/stores/profile";
+import {useUiStore} from "@/stores/statusbar";
 
 const isOpen = defineModel<boolean>('is-open',{default: false});
 const emit = defineEmits<{
   (e: 'refresh'): void;
 }>();
+
+const ui = useUiStore();
 
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -22,7 +25,6 @@ const listSelect = ref<ListReboot | null>(null);
 const listsFinished = ref<ListReboot[]>([]);
 async function ultimasLists(): Promise<void> {
   const resp = await getListsFinished();
-
   listsFinished.value = resp.listReboots ?? [];
 }
 
@@ -51,11 +53,10 @@ watch(isOpen, async (open) => {
   <ion-modal
       v-model:is-open="isOpen"
       :backdrop-dismiss="false"
-      :initial-breakpoint="0.6"
       @didDismiss="emit('refresh')"
   >
     <ion-header class="ion-no-border">
-      <toolbar-custom class="px-2">
+      <toolbar-custom class="px-2" :style="{paddingTop: ui.toolbarPaddingTop + 'px'}">
         <ion-title>Reiniciar Lista</ion-title>
         <template #end>
           <ion-button fill="clear" shape="circle" class="text-neutral-800 dark:text-white" @click="isOpen = false">
@@ -90,10 +91,10 @@ watch(isOpen, async (open) => {
           @didDismiss="toast.show = false"
       />
     </ion-content>
-    <ion-footer class="ion-no-border">
+    <ion-footer class="ion-no-border" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
       <div class="w-full px-3 py-1 flex gap-1">
-        <btn-secondary v-if="listSelect != null" @click="reiniciarLista('nueva')">Lista nueva</btn-secondary>
-        <btn-primary shape="round" size="large" v-if="listSelect != null" @click="reiniciarLista('reiniciar')">Reiniciar lista</btn-primary>
+        <btn-secondary v-if="listSelect != null" class="w-full" @click="reiniciarLista('nueva')">Lista nueva</btn-secondary>
+        <btn-primary shape="round" size="large" v-if="listSelect != null" class="w-full" @click="reiniciarLista('reiniciar')">Reiniciar lista</btn-primary>
       </div>
     </ion-footer>
   </ion-modal>

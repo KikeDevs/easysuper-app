@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   IonPage, IonHeader, IonTitle, IonBackButton, IonContent, IonToast, IonRefresherContent, IonRefresher,
-  onIonViewDidEnter,
+  onIonViewDidEnter, IonModal,
 } from "@ionic/vue";
 import { computed, ref } from "vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
@@ -60,11 +60,31 @@ async function refreshProductos(): Promise<void> {
   await getProductosLista();
 }
 
+const dialog = ref({
+  open: false,
+  title: "Listo",
+  message: ""
+});
+
+let dialogTimer: number | null = null;
+function openMiniDialog(message: string, title = "Listo"): void {
+  dialog.value.title = title;
+  dialog.value.message = message;
+  dialog.value.open = true;
+
+  if (dialogTimer) window.clearTimeout(dialogTimer);
+  dialogTimer = window.setTimeout(() => {
+    dialog.value.open = false;
+  }, 3000);
+}
 
 async function deleteProducto(p: ProductList): Promise<void> {
   const resp = await deleteProduct(props.listId, p.product_id);
   await getProductosLista();
-  showToast(resp.message);
+  //showToast(resp.message);
+
+  openMiniDialog(resp.message, resp.status === "ok" ? "Eliminado" : "Ups");
+
 }
 async function doRefresh(ev: CustomEvent): Promise<void> {
   try {
@@ -172,8 +192,10 @@ const grupos = computed<Group[]>(() => {
       <ion-toast
           :is-open="toast.show"
           :duration="3000"
+          position="middle"
           @didDismiss="toast.show = false"
           :message="toast.message"
+          class="custom-toast"
       />
 
       <loader-normal :open="initialLoading"/>
@@ -204,5 +226,48 @@ const grupos = computed<Group[]>(() => {
         @refresh="refreshProductos"
         :p-top="ui.toolbarPaddingTop"
     />
+
+    <ion-modal
+        :is-open="dialog.open"
+        :backdrop-dismiss="true"
+        :show-backdrop="true"
+        class="mini-dialog"
+        @didDismiss="dialog.open = false"
+    >
+      <div class="mini-card">
+        <p class="mini-title">{{ dialog.title }}</p>
+        <p class="mini-msg">{{ dialog.message }}</p>
+      </div>
+    </ion-modal>
+
   </ion-page>
 </template>
+<style scoped>
+.mini-dialog {
+  --width: 85%;
+  --max-width: 320px;
+  --height: auto;
+  --border-radius: 18px;
+  --backdrop-opacity: 0.35;
+  --background: oklch(62.3% 0.214 259.815);
+}
+
+.mini-card {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mini-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  color: white;
+}
+
+.mini-msg {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
+</style>

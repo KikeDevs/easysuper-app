@@ -8,7 +8,7 @@ import {
   IonToast,
   IonRefresher,
   IonRefresherContent,
-  IonRippleEffect, onIonViewDidEnter,
+  IonRippleEffect, onIonViewDidEnter, IonModal,
 } from "@ionic/vue";
 import {ref} from "vue";
 
@@ -26,6 +26,7 @@ import ModalReiniciarLista from "@/views/Pages/Listas/ModalReiniciarLista.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 import {useUiStore} from "@/stores/statusbar";
 import AvatarPerfil from "@/views/Components/AvatarPerfil.vue";
+import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 
 const initialLoading = ref(false);
 
@@ -75,13 +76,12 @@ async function agregarLista(): Promise<void> {
   const resp = await addList(nameList.value);
 
   if (resp.status !== "ok") {
-    showToast(resp.message ?? "No se pudo agregar la lista. Inténtalo de nuevo.");
     nameList.value = "";
     modalList.value = false;
     return;
   }
 
-  showToast(resp.message ?? "Lista agregada.");
+  openMiniDialog(resp.message, resp.status === "ok" ? "Agregada" : "Ups");
   await cargarMisListas();
 
   nameList.value = '';
@@ -95,7 +95,7 @@ async function eliminarLista(listId: number): Promise<void> {
     return;
   }
 
-  showToast(resp.message);
+  openMiniDialog(resp.message, resp.status === "ok" ? "Eliminada" : "Ups");
   await cargarMisListas();
   showOpciones.value = false;
 
@@ -114,6 +114,23 @@ function iniciarCompra(tProductos: number): void{
   }
 }
 
+const dialog = ref({
+  open: false,
+  title: "Listo",
+  message: ""
+});
+
+let dialogTimer: number | null = null;
+function openMiniDialog(message: string, title = "Listo"): void {
+  dialog.value.title = title;
+  dialog.value.message = message;
+  dialog.value.open = true;
+
+  if (dialogTimer) window.clearTimeout(dialogTimer);
+  dialogTimer = window.setTimeout(() => {
+    dialog.value.open = false;
+  }, 3000);
+}
 
 async function doRefresh(ev: CustomEvent): Promise<void> {
   try {
@@ -146,10 +163,6 @@ onIonViewDidEnter(async () => {
         </template>
 
         <template #end>
-          <ion-button fill="clear" shape="circle" class="text-neutral-800 dark:text-white" @click="modalReiniciar = true">
-            <icon-custom icon="time-past" size="xl"/>
-          </ion-button>
-
           <avatar-perfil/>
         </template>
       </toolbar-custom>
@@ -200,6 +213,13 @@ onIonViewDidEnter(async () => {
         </btn-primary>
       </div>
 
+      <btn-secondary size="large" shape="default" class="w-full mt-2" @click="modalReiniciar = true">
+        <div class="flex items-center justify-center gap-2">
+          <icon-custom icon="time-past" size="xl"/>
+          <p>Listas Anteriores</p>
+        </div>
+      </btn-secondary>
+
       <div class="h-16"/>
 
 
@@ -231,10 +251,50 @@ onIonViewDidEnter(async () => {
           @didDismiss="toast.show = false"
       />
 
+      <ion-modal
+          :is-open="dialog.open"
+          :backdrop-dismiss="true"
+          :show-backdrop="true"
+          class="mini-dialog"
+          @didDismiss="dialog.open = false"
+      >
+        <div class="mini-card">
+          <p class="mini-title">{{ dialog.title }}</p>
+          <p class="mini-msg">{{ dialog.message }}</p>
+        </div>
+      </ion-modal>
+
       <loader-normal :open="initialLoading"/>
     </ion-content>
 
   </ion-page>
 </template>
 <style scoped>
+.mini-dialog {
+  --width: 85%;
+  --max-width: 320px;
+  --height: auto;
+  --border-radius: 18px;
+  --backdrop-opacity: 0.35;
+  --background: oklch(62.3% 0.214 259.815);
+}
+
+.mini-card {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mini-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  color: white;
+}
+
+.mini-msg {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
 </style>

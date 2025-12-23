@@ -279,7 +279,7 @@ async function ofertasMap(id:string,marca:string): Promise<void> {
   else showToast('No hay ofertas agregadas.')
 }
 function urlPromos(img_promo: string): string {
-  const BASE = 'https://darkgrey-jaguar-767398.hostingersite.com/';
+  const BASE = 'http://srv1170449.hstgr.cloud/';
   const CARP = 'ofertas/';
 
   const brand = superSelect?.value;

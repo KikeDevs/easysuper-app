@@ -75,6 +75,13 @@ ion-toast{
     --border-radius: 20px;
 }
 
+ion-toast.custom-toast {
+    --background: oklch(62.3% 0.214 259.815);
+    --box-shadow: 3px 3px 10px 0 rgba(0, 0, 0, 0.2);
+    --color: white;
+}
+
+
 ion-content {
     --padding-top:    var(--ion-safe-area-top);
     --padding-bottom: var(--ion-safe-area-bottom);
