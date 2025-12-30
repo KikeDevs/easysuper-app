@@ -2,8 +2,6 @@ import {api} from "@/services/api";
 import {Departamento} from "@/interfaces/types";
 import {Product} from "@/interfaces/products";
 import {Brand, BrandSuper} from "@/interfaces/brands";
-import {data} from "autoprefixer";
-import {error} from "@capacitor/assets/dist/util/log";
 
 interface DepartmentResponse {
     status: 'ok' | 'error' | 'warning';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   IonPage, IonContent, IonRippleEffect, IonFooter,
-  IonModal, IonAvatar, IonToast, IonRefresher, IonRefresherContent, onIonViewDidEnter
+  IonModal, IonAvatar, IonToast, IonRefresher, IonRefresherContent, onIonViewDidEnter, useIonRouter
 } from '@ionic/vue';
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
@@ -10,7 +10,6 @@ import {Profile} from "@/interfaces/types";
 import {addPerfil, edittPerfil, userPerfiles} from "@/api/UserProfiles";
 import ItemUser from "@/views/Components/ItemUser.vue";
 import {useProfileStore} from "@/stores/profile";
-import router from "@/router/router";
 import {colorFromTextStable} from "@/utils/colorFromText";
 
 import { verificarPermisoUbicacion } from "@/utils/ubicacionPermisos";
@@ -20,10 +19,12 @@ import {useUiStore} from "@/stores/statusbar";
 
 const initialLoading = ref(false);
 const ui = useUiStore();
-
+const profileStore = useProfileStore();
+const ion = useIonRouter();
 
 const toast = ref({ show: false, message: "" });
 function showToast(message: string) {
+  toast.value.show = true;
   toast.value.message = message;
 }
 
@@ -102,7 +103,6 @@ async function userProfiles(): Promise<void> {
   if (resp.status === "error"){
     showToast(resp.message);
   }
-  showToast(resp.message);
 }
 
 // 👇 NUEVO: estado del permiso de ubicación
@@ -119,24 +119,42 @@ async function checkLocationPermiso(): Promise<void> {
 }
 
 async function onSelectProfile(p: Profile): Promise<void> {
-  // aquí igual podríamos volver a checar por si cambió
-  if (!locationGranted.value) {
-    // opcional: puedes volver a intentar pedir permiso cuando escoge perfil
-    const granted = await verificarPermisoUbicacion();
-    locationGranted.value = granted;
+
+  profileStore.select(p);
+  profileStore.setLocationGranted(locationGranted.value);
+
+  ion.replace('/home');
+}
+function withTimeout<T>(p: Promise<T>, ms = 1800): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
+  ]);
+}
+
+const requestingLocation = ref(false);
+
+async function initLocationOnUsersEnter(): Promise<void> {
+  if (requestingLocation.value) return;
+  requestingLocation.value = true;
+
+  try {
+    const granted = await withTimeout(verificarPermisoUbicacion(), 1800);
+    locationGranted.value = !!granted;
+    profileStore.setLocationGranted(!!granted);
+
     if (!granted) {
-      // no bloqueamos elegir perfil ni ir al home,
-      // solo avisamos otra vez
       showToast("Ubicación desactivada. Ofertas cercanas estarán bloqueadas.");
     }
+  } catch {
+    // Si Android 10 se cuelga, NO rompemos la pantalla ni bloqueamos taps
+    locationGranted.value = false;
+    profileStore.setLocationGranted(false);
+  } finally {
+    requestingLocation.value = false;
   }
-
-  useProfileStore().select(p);
-  // podrías mandar también el flag al store:
-  useProfileStore().setLocationGranted?.(locationGranted.value);
-
-  await router.replace('/home');
 }
+
 
 const bg = computed(() => colorFromTextStable(showModalPerfil.value.username));
 

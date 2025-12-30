@@ -5,7 +5,7 @@ import {
   IonTitle,
   IonContent,
   IonToast,
-  IonRippleEffect, onIonViewDidEnter, onIonViewWillEnter,
+  onIonViewDidEnter, onIonViewWillEnter, onIonViewWillLeave,
 } from "@ionic/vue";
 
 import { App as CapacitorApp } from "@capacitor/app";
@@ -40,6 +40,12 @@ function showToast(message: string) {
   toast.value.show = true;
 }
 
+const perfilName = computed(() => {
+  return profileStore.selected && profileStore.selected.name_perfil
+      ? profileStore.selected.name_perfil
+      : "";
+});
+
 function goListas(): void { router.push("listas"); }
 function goOfertas(): void {
   if (canSeeOfertas.value) router.push('ofertas');
@@ -72,7 +78,7 @@ onIonViewDidEnter(async () => {
   });
 })
 
-onIonViewWillEnter(() => {
+onIonViewWillLeave(() => {
   if (backListener) {
     backListener.remove();
     backListener = null;
@@ -100,7 +106,7 @@ onIonViewWillEnter(() => {
       </toolbar-custom>
     </ion-header>
 
-    <ion-content :scroll-y="false" :fullscreen="true" class="ion-padding">
+    <ion-content :fullscreen="true" class="ion-padding">
       <div class="w-full h-full flex flex-col gap-5">
 
         <!-- Buscador -->
@@ -116,7 +122,7 @@ onIonViewWillEnter(() => {
           <div>
             <h4 class="tracking-wide text-xl">
               ¡Hola
-              <span class="font-bold text-blue-600 dark:text-white">{{ profileStore.selected?.name_perfil ?? '' }}</span>!
+              <span class="font-bold text-blue-600 dark:text-white">{{ perfilName }}</span>!
             </h4>
             <p class="text-lg">{{ saludo }}</p>
           </div>

@@ -54,6 +54,8 @@ async function getProductosLista(): Promise<void> {
   productosLista.value = resp.listDetalles ?? [];
 }
 
+const productosIds = computed<number[]>(() => productosLista.value.map(p => p.product_id));
+
 
 async function refreshProductos(): Promise<void> {
   showSearch.value = false;
@@ -223,6 +225,7 @@ const grupos = computed<Group[]>(() => {
         :userlist_id="listId"
         v-model:is-open="showSearch"
         :departamentos="departaments"
+        :added-ids="productosIds"
         @refresh="refreshProductos"
         :p-top="ui.toolbarPaddingTop"
     />

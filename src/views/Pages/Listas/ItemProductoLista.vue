@@ -54,6 +54,13 @@ const deptIcon = computed<string>(() => {
           class="w-full h-full object-cover"
       />
 
+      <img
+          v-else-if="itemDetails?.brand && itemDetails?.patrocinio === 1"
+          :src="'http://srv1170449.hstgr.cloud/images/brands/' + itemDetails.brand + '.png'"
+          :alt="itemDetails.brand"
+          class="w-full h-full object-cover"
+      />
+
       <!-- ICONO: todos los demás casos -->
       <icon-custom
           v-else

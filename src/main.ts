@@ -31,6 +31,7 @@ import '@ionic/vue/css/palettes/dark.system.css';
 import './theme/variables.css';
 import {Capacitor} from "@capacitor/core";
 import {SocialLogin} from "@capgo/capacitor-social-login";
+import {useProfileStore} from "@/stores/profile";
 
 const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
     const DURATION = 600;
@@ -95,10 +96,11 @@ async function initSocialLogin(): Promise<void> {
 }
 
 async function bootstrap() {
+    const isAndroid = Capacitor.getPlatform() === "android";
     const app = createApp(App);
     const pinia = createPinia();
 
-    app.use(IonicVue, {navAnimation: whatsappSlide,animated:true});
+    app.use(IonicVue, { navAnimation: whatsappSlide, animated: true });
     app.use(pinia);
     app.use(router);
 
@@ -112,6 +114,7 @@ async function bootstrap() {
     wireApiAuth();
 
     // 3) Guards (ya pueden leer auth)
+    useProfileStore().hydrate();
     installGuards(router);
 
     // 4) Listo el enrutador

@@ -17,8 +17,7 @@ export default defineConfig({
       tailwindcss()
   ],
   build: {
-    chunkSizeWarningLimit: 1024,
-
+      chunkSizeWarningLimit: 1024,
   },
   resolve: {
     alias: {

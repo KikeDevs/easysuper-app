@@ -29,7 +29,7 @@ const routes = [
         path: "/home",
         name: "Home",
         component: () => import('../views/Pages/Home/Home.vue'),
-        meta: {requiresAuth: true, requiresProfile: true},
+        meta: {requiresProfile: true},
     },
     {
         path: "/listas",

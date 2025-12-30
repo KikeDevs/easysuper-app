@@ -87,7 +87,7 @@ export const useUiStore = defineStore("ui", {
                 this.safeTop = this.topOverlay ? readSafeTopFallback(this.platform) : 0;
 
                 // BOTTOM según versión Android:
-                if (this.androidMajor >= 15) {
+                if (this.androidMajor >= 14) {
                     // Android 15+ → barra overlay, hay que sumar inset
                     this.safeBottom = readSafeBottomFallback(this.platform);
                     if (this.safeBottom < 0)  this.safeBottom = 0;

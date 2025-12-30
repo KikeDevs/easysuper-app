@@ -3,6 +3,7 @@ export interface Product {
     name_product: string;
     unit: string | null;
     content: string | null;
+    brand_id: number | null;
     brand: string | null;
     patrocinio: number;
     subcategory: string;
@@ -20,4 +21,7 @@ export interface ProductList {
     status_pro: number;
     name_subcategory: string;
     departament_id?: number | null;
+    brand_id: number | null;
+    brand: string | null;
+    patrocinio: number;
 }

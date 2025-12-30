@@ -6,7 +6,6 @@ import { useAuthStore } from "@/stores/auth";
 const isNative = Capacitor.isNativePlatform();
 
 
-
 const BASE_URL_NATIVE = "http://srv1170449.hstgr.cloud/api/";
 const BASE_URL_WEB = "http://srv1170449.hstgr.cloud/api/"; // no importa si no usas web
 
