@@ -292,14 +292,6 @@ onIonViewDidEnter(async () => {
         </div>
       </ion-modal>
 
-      <ion-toast
-          :is-open="toast.show"
-          :duration="3000"
-          position-anchor=""
-          @didDismiss="toast.show = false"
-          :message="toast.message"
-      />
-
       <loader-normal
           :open="initialLoading"
       />

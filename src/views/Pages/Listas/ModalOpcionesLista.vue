@@ -22,6 +22,7 @@ const emit = defineEmits<{
   (e: 'update:is-open', v: boolean): void
   (e: 'eliminar'): void
   (e: 'compra'): void
+  (e: 'compartir'): void
 }>()
 
 
@@ -32,7 +33,6 @@ const emit = defineEmits<{
   <ion-modal
       v-model:is-open="isOpen"
       @didDismiss="emit('update:is-open', false)"
-      class="bottom-modal"
   >
     <ion-content>
       <div class="flex items-center gap-2 px-3 pt-2 pb-1 border-b-1 border-b-gray-400">
@@ -58,7 +58,7 @@ const emit = defineEmits<{
 
       <ion-list lines="none">
         <item-custom icon="shopping-cart" size="xl" title="Iniciar Compra" @click="emit('compra')"/>
-        <item-custom icon="share" size="xl" title="Compartir Lista"/>
+        <item-custom icon="share" size="xl" title="Compartir Lista" @click="emit('compartir')"/>
         <item-custom icon="trash" size="xl" title="Eliminar Lista"
                      :disabled="item.name_list === 'Hogar' || item.name_list === 'Oficina'"
                      class="disabled:opacity-40" @click="emit('eliminar')"/>
@@ -72,25 +72,12 @@ const emit = defineEmits<{
   </ion-modal>
 </template>
 <style scoped>
-/* Modal tipo “pegado abajo” sin sheet */
-ion-modal.bottom-modal::part(content) {
-  /* ocupa ancho completo y un alto fijo (ajústalo) */
-  width: 90%;
-  height: 35%;
-  max-height: 90vh;
-
-  /* quita el centrado por defecto del modal */
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  bottom: 15px;
-  top: auto;
-  margin: 0;
-  transform: none !important;
-
-  /* estilo del panel */
-  border-radius: 15px;
-  overflow: hidden;
+ion-modal{
+  --width: 85%;
+  --max-width: 420px;
+  --height: 270px;
+  --border-radius: 10px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
 }
 
 </style>

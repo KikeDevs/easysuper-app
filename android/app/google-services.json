@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "500864632963",
-    "project_id": "easysuper-f7453",
-    "storage_bucket": "easysuper-f7453.firebasestorage.app"
+    "project_number": "44256859496",
+    "project_id": "easysuper-3d8da",
+    "storage_bucket": "easysuper-3d8da.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:500864632963:android:1d4f50c7318f1c9832f3b6",
+        "mobilesdk_app_id": "1:44256859496:android:db01fc42be339b3a2a72dd",
         "android_client_info": {
-          "package_name": "io.ionic.starter"
+          "package_name": "com.easysuper.app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "500864632963-df6e5qvnjsjrnfagn39p2dkms61sos6l.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCqtAg_nS-ZtKw2ROzw-SujYNwDoG3uqos"
+          "current_key": "AIzaSyBSgZcEIfExG_wWYv_-fGF0WoDW7WmVnZ8"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "500864632963-df6e5qvnjsjrnfagn39p2dkms61sos6l.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

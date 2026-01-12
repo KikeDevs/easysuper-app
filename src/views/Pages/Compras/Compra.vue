@@ -238,7 +238,7 @@ const carrito = computed<ProductList[]>(() =>
 
             <div
                 class="w-6 h-6 mr-2 rounded-full"
-                :class="[p.status_pro === 0 ? 'bg-gray-500' : 'bg-green-600']"
+                :class="[p.status_pro === 0 ? 'bg-yellow-500' : 'bg-green-600']"
             />
           </item-producto-lista>
         </div>

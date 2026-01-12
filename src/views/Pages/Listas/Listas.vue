@@ -17,7 +17,7 @@ import IconCustom from "@/views/Components/IconCustom.vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import ModalOpcionesLista from "@/views/Pages/Listas/ModalOpcionesLista.vue";
 
-import {misList, addList, deleteList} from "@/api/Lists";
+import {misList, addList, deleteList, getListDetails} from "@/api/Lists";
 import {miList} from "@/interfaces/types";
 import ItemMiLista from "@/views/Pages/Listas/ItemMiLista.vue";
 import router from "@/router/router";
@@ -27,14 +27,12 @@ import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 import {useUiStore} from "@/stores/statusbar";
 import AvatarPerfil from "@/views/Components/AvatarPerfil.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
+import {ProductList} from "@/interfaces/products";
+import {Share} from "@capacitor/share";
 
 const initialLoading = ref(false);
 
 const ui = useUiStore();
-
-const toast = ref({ show: false, message: "" });
-const showToast = (message: string) => { toast.value = { show: true, message }; };
-
 const modalReiniciar = ref<boolean>(false);
 
 const modalList = ref(false);
@@ -53,7 +51,7 @@ const misListas = ref<miList[]>([]);
 async function cargarMisListas(): Promise<void> {
   const resp = await misList();
   if (resp.status !== "ok") {
-    showToast(resp.message ?? "No se pudieron cargar tus listas.");
+    openMiniDialog("No se pudieron cargar tus listas","Oops");
     misListas.value = [];
     return;
   }
@@ -91,7 +89,7 @@ async function agregarLista(): Promise<void> {
 async function eliminarLista(listId: number): Promise<void> {
   const resp = await deleteList(listId);
   if (resp.status !== "ok") {
-    toast.value = { show: true, message: resp.message };
+    openMiniDialog(resp.message,"Oops");
     return;
   }
 
@@ -100,18 +98,75 @@ async function eliminarLista(listId: number): Promise<void> {
   showOpciones.value = false;
 
 }
-
 async function reiniciarLista(): Promise<void> {
   modalReiniciar.value = false;
   await cargarMisListas();
 }
 
-function iniciarCompra(tProductos: number): void{
-  if (tProductos === 0) {
-    showToast("No hay productos para iniciar compra.");
+function iniciarCompra(listItem:miList): void{
+  if (listItem.t_products === 0) {
+    openMiniDialog("No hay productos para compartir compra.","Oops");
     showOpciones.value = false;
     return;
   }
+
+  showOpciones.value = false;
+
+  router.push(
+      {
+        name: "Compra",
+        params: {
+          userlistId: listItem.userlist_id,
+          nameList: listItem.name_list,
+        }
+      }
+  );
+
+}
+
+function estadoIcon(status: number) {
+  return status === 1 ? '✅' : '⬜';
+}
+
+function estadoTxt(status: number) {
+  return status === 1 ? 'Comprado' : 'Pendiente';
+}
+
+function buildShareText(listItem: miList, items: ProductList[]) {
+  const header = `🛒 Lista: ${listItem.name_list}\n`;
+
+  const body = items.map((p, idx) => {
+    const qty = (p.cantidad && p.cantidad > 0) ? ` x${p.cantidad}` : '';
+    // Si quieres mostrar quien actualizó:
+    // const by = p.name_perfil ? ` (por ${p.name_perfil})` : '';
+    return `${idx + 1}. ${estadoIcon(p.status_pro)} ${p.name_product}${qty} — ${estadoTxt(p.status_pro)}`;
+  });
+
+  return `${header}\n${body.join('\n')}\n\nEnviado desde EasySuper`;
+}
+
+async function compartirLista(listItem: miList): Promise<void> {
+  if (!listItem.t_products || listItem.t_products === 0) {
+    openMiniDialog("No hay productos para compartir compra.","Oops");
+  }
+
+  const resp = await getListDetails(listItem.userlist_id);
+  const productos = (resp?.listDetalles ?? []) as ProductList[];
+
+  if (!productos.length) {
+    openMiniDialog("No hay productos para compartir compra.","Oops");
+  }
+
+  // Opcional: pendientes arriba, comprados abajo
+  const ordenados = [...productos].sort((a, b) => a.status_pro - b.status_pro);
+
+  const text = buildShareText(listItem, ordenados);
+
+  await Share.share({
+    title: `Lista: ${listItem.name_list}`,
+    text,
+    dialogTitle: 'Compartir lista',
+  });
 }
 
 const dialog = ref({
@@ -229,7 +284,8 @@ onIonViewDidEnter(async () => {
           v-model:is-open="showOpciones"
           :item="itemOpciones"
           @eliminar="eliminarLista(itemOpciones.userlist_id)"
-          @compra="iniciarCompra(itemOpciones.t_products)"
+          @compra="iniciarCompra(itemOpciones)"
+          @compartir="compartirLista(itemOpciones)"
       />
 
       <modal-agregar-lista
@@ -241,14 +297,6 @@ onIonViewDidEnter(async () => {
       <modal-reiniciar-lista
           v-model:is-open="modalReiniciar"
           @refresh="reiniciarLista"
-      />
-
-      <!-- Toast -->
-      <ion-toast
-          :is-open="toast.show"
-          :duration="3000"
-          :message="toast.message"
-          @didDismiss="toast.show = false"
       />
 
       <ion-modal

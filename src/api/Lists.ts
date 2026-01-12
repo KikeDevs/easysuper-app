@@ -1,7 +1,6 @@
-import {ListReboot, miList, ProductList} from "@/interfaces/types";
+import {ListReboot, miList} from "@/interfaces/types";
+import {ProductList} from "@/interfaces/products";
 import {api} from "@/services/api";
-import {userPerfiles} from "@/api/UserProfiles";
-import {useProfileStore} from "@/stores/profile";
 
 
 interface actionListsResponse {

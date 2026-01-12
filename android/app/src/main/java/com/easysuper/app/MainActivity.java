@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.easysuper.app;
 
 import android.content.Intent;
 import android.graphics.Color;
