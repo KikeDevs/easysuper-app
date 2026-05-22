@@ -69,7 +69,6 @@ const emit = defineEmits<{
       </div>
     </ion-content>
   </ion-modal>
-
 </template>
 
 <style scoped>

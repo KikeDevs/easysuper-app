@@ -4,7 +4,7 @@ export interface Product {
     unit: string | null;
     content: string | null;
     brand_id: number | null;
-    brand: string | null;
+    name_brand: string | null;
     patrocinio: number;
     subcategory: string;
     category: string;
@@ -22,6 +22,6 @@ export interface ProductList {
     name_subcategory: string;
     departament_id?: number | null;
     brand_id: number | null;
-    brand: string | null;
+    name_brand: string | null;
     patrocinio: number;
 }

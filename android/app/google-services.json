@@ -12,7 +12,24 @@
           "package_name": "com.easysuper.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "44256859496-7o9lp7rngd9g1o2dqlg34bvqdrmq3ues.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.easysuper.app",
+            "certificate_hash": "770dc5c0461bcc141e0668f8c0b20013a56954ed"
+          }
+        },
+        {
+          "client_id": "44256859496-rjhro3u0lbrnp8i7ng1h86hi96okaljq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.easysuper.app",
+            "certificate_hash": "9573c5f15329b69034fde1b0d1dfe05300ebd91b"
+          }
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBSgZcEIfExG_wWYv_-fGF0WoDW7WmVnZ8"
@@ -20,7 +37,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

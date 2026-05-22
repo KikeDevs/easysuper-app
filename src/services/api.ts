@@ -2,15 +2,12 @@
 import axios from "axios";
 import { Capacitor } from "@capacitor/core";
 import { useAuthStore } from "@/stores/auth";
+import {getUrl} from "@/services/services";
 
 const isNative = Capacitor.isNativePlatform();
 
-
-const BASE_URL_NATIVE = "http://srv1170449.hstgr.cloud/api/";
-const BASE_URL_WEB = "http://srv1170449.hstgr.cloud/api/"; // no importa si no usas web
-
 export const api = axios.create({
-    baseURL: isNative ? BASE_URL_NATIVE : BASE_URL_WEB,
+    baseURL: isNative ? getUrl("easysuper.cloud") : getUrl("easysuper.cloud"),
     timeout: 15000,
 });
 

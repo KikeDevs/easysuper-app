@@ -81,6 +81,11 @@ const routes = [
         path: "/configs/cuenta",
         name: "Cuenta",
         component: () => import('../views/Pages/Configuraciones/Cuenta.vue'),
+    },
+    {
+        path: "/access/:token",
+        name: "AccessLink",
+        component: () => import('../views/Pages/AccessLink.vue'),
     }
 ];
 export default routes;

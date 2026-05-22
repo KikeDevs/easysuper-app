@@ -23,6 +23,7 @@ const emit = defineEmits<{
   (e: 'eliminar'): void
   (e: 'compra'): void
   (e: 'compartir'): void
+  (e: 'editar'): void
 }>()
 
 
@@ -62,7 +63,7 @@ const emit = defineEmits<{
         <item-custom icon="trash" size="xl" title="Eliminar Lista"
                      :disabled="item.name_list === 'Hogar' || item.name_list === 'Oficina'"
                      class="disabled:opacity-40" @click="emit('eliminar')"/>
-        <item-custom icon="pencil" size="xl" title="Editar Lista"
+        <item-custom icon="pencil" size="xl" title="Editar Lista" @click="emit('editar')"
                      :disabled="item.name_list === 'Hogar' || item.name_list === 'Oficina'"
                      class="disabled:opacity-40"
         />

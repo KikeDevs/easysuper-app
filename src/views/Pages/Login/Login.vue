@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   IonPage, IonContent, IonImg, IonBackButton, IonButton,
-  IonToast, isPlatform, useIonRouter, IonHeader, onIonViewDidEnter
+  IonToast, isPlatform, useIonRouter, IonHeader, onIonViewDidEnter, IonModal
 } from "@ionic/vue";
 import InputCustom from "@/views/Components/InputCustom.vue";
 import { computed, ref } from "vue";
@@ -13,12 +13,29 @@ import {loginWithGoogle, logUser} from "@/api/Login";
 import { useAuthStore } from "@/stores/auth";
 import {useUiStore} from "@/stores/statusbar";
 
-const isIos = computed(() => isPlatform('ios'));
 const ionRouter = useIonRouter();
 const ui = useUiStore();
 
-const toast = ref({ show: false, message: "" });
-const showToast = (message: string) => { toast.value = { show: true, message }; };
+const dialog = ref({
+  open: false,
+  title: "Listo",
+  message: ""
+});
+
+let dialogTimer: number | null = null;
+function showToast(message: string,title: string): void {
+  dialog.value = {
+    open: true,
+    title: title,
+    message: message,
+  };
+
+  if (dialogTimer) window.clearTimeout(dialogTimer);
+  dialogTimer = window.setTimeout(() => {
+    dialog.value.open = false;
+  }, 3000);
+
+}
 
 const User = ref({
   email: "",
@@ -38,7 +55,7 @@ function verPass(): void {
 const loading = ref(false);
 async function inUser(): Promise<void> {
   if (!User.value.email || !User.value.password) {
-    showToast("Ingresa tu correo y contraseña.");
+    showToast("Ingresa tu correo y contraseña.", "Info");
     return;
   }
 
@@ -54,7 +71,7 @@ async function inUser(): Promise<void> {
       if (resp.token && resp.user) {
         await useAuthStore().setSession(resp.token, resp.user);// -> setea Bearer y persiste
       }
-      showToast(resp.message || "Inicio de sesión exitoso.");
+      showToast(resp.message || "Inicio de sesión exitoso.","Listo");
       // limpia password por seguridad
       User.value.password = "";
       // navega al selector de perfiles
@@ -63,15 +80,15 @@ async function inUser(): Promise<void> {
     }
 
     if (resp.status === "warning") {
-      showToast(resp.message || "No se pudo iniciar sesión.");
+      showToast(resp.message || "No se pudo iniciar sesión.","Error");
       return;
     }
 
     // status === "error" u otros
-    showToast(resp.message || "Error al iniciar sesión.");
+    showToast(resp.message || "Error al iniciar sesión.","Error");
   } catch (e: any) {
     const msg = e?.response?.data?.message || e?.message || "Error de red.";
-    showToast(msg);
+    showToast(msg,"Error");
   } finally {
     loading.value = false;
   }
@@ -88,16 +105,15 @@ async function loginGoogle(): Promise<void> {
       if (resp.token && resp.user) {
         await useAuthStore().setSession(resp.token, resp.user);
       }
-      showToast("Sesión iniciada con Google.");
+      showToast("Sesión iniciada con Google.","Listo");
       ionRouter.replace("/users");
       return;
     }
 
-    showToast(resp.message || "No se pudo iniciar sesión con Google.");
+    showToast(resp.message || "No se pudo iniciar sesión con Google.","Error");
   } catch (e: any) {
-    console.error("[loginGoogle] error:", e);
     const msg = e?.message || "Error inesperado en Google Login.";
-    showToast(msg);
+    showToast(msg,"Error");
   } finally {
     loading.value = false;
   }
@@ -206,14 +222,52 @@ onIonViewDidEnter(async ()=> {
         </div>
       </div>
 
-      <ion-toast
-          :is-open="toast.show"
-          :duration="5000"
-          @didDismiss="toast.show = false"
-          :message="toast.message"
-      />
+      <ion-modal
+          :is-open="dialog.open"
+          :backdrop-dismiss="true"
+          :show-backdrop="true"
+          class="mini-dialog"
+
+          @didDismiss="dialog.open = false"
+      >
+        <div class="mini-card">
+          <p class="mini-title">{{ dialog.title }}</p>
+          <p class="mini-msg">{{ dialog.message }}</p>
+        </div>
+      </ion-modal>
+
     </ion-content>
   </ion-page>
 </template>
+<style scoped>
+.mini-dialog {
+  --width: 85%;
+  --max-width: 320px;
+  --height: auto;
+  --border-radius: 18px;
+  --backdrop-opacity: 0.35;
+  --background: oklch(62.3% 0.214 259.815);
+}
+
+.mini-card {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mini-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  color: white;
+}
+
+.mini-msg {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
+
+</style>
 
 

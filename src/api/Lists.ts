@@ -19,6 +19,16 @@ export async function addList(nameList: string): Promise<actionListsResponse> {
         return { status: "error", message };
     }
 }
+export async function updateList(listId: number, nameList: string) {
+    try {
+        const res = await api.post("update-list", { listId, nameList }, { timeout: 15000 });
+
+        // Ajusta esto a tu backend real (status/message)
+        return res.data;
+    } catch (e: any) {
+        return { status: "error", message: "No se pudo actualizar la lista" };
+    }
+}
 export async function deleteList(listId: number): Promise<actionListsResponse> {
     try {
         const resp = await api.post<actionListsResponse>('delete-list', {userlist_id: listId})

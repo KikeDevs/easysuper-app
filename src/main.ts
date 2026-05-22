@@ -32,6 +32,8 @@ import './theme/variables.css';
 import {Capacitor} from "@capacitor/core";
 import {SocialLogin} from "@capgo/capacitor-social-login";
 import {useProfileStore} from "@/stores/profile";
+import RootApp from "./App.vue";
+import {App as CapacitorApp} from "@capacitor/app"
 
 const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
     const DURATION = 600;
@@ -84,7 +86,7 @@ const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
 };
 
 async function initSocialLogin(): Promise<void> {
-    const WEB_CLIENT_ID = '542553177675-v47dtq5qerqt5ur6bd272264hsc2il8c.apps.googleusercontent.com';
+    const WEB_CLIENT_ID = '44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com';
     if (Capacitor.getPlatform() === "android" || Capacitor.getPlatform() === "ios") {
         await SocialLogin.initialize({
             google:{
@@ -97,7 +99,7 @@ async function initSocialLogin(): Promise<void> {
 
 async function bootstrap() {
     const isAndroid = Capacitor.getPlatform() === "android";
-    const app = createApp(App);
+    const app = createApp(RootApp);
     const pinia = createPinia();
 
     app.use(IonicVue, { navAnimation: whatsappSlide, animated: true });
@@ -119,6 +121,16 @@ async function bootstrap() {
 
     // 4) Listo el enrutador
     await router.isReady();
+    // App abierta desde un link cuando estaba cerrada
+    const launchData = await CapacitorApp.getLaunchUrl();
+    if (launchData?.url) {
+        await handleIncomingUrl(launchData.url);
+    }
+
+// App abierta desde un link cuando ya estaba abierta/en segundo plano
+    CapacitorApp.addListener("appUrlOpen", async ({ url }) => {
+        await handleIncomingUrl(url);
+    });
 
     // 5) Si ya hay sesión, salta login
     if (auth.isLogged && router.currentRoute.value.path === "/") {
@@ -126,6 +138,29 @@ async function bootstrap() {
     }
 
     app.mount("#app");
+}
+
+async function handleIncomingUrl(url: string): Promise<void> {
+    try {
+        if (!url) return;
+
+        const cleanUrl = new URL(url);
+        let token = "";
+
+        if (cleanUrl.pathname.startsWith("/access/")) {
+            token = cleanUrl.pathname.split("/access/")[1] || "";
+        }
+
+        if (!token && cleanUrl.protocol === "easysuper:" && cleanUrl.host === "access") {
+            token = cleanUrl.pathname.replace(/^\/+/, "");
+        }
+
+        if (!token) return;
+
+        await router.replace(`/access/${token}`);
+    } catch (error) {
+        console.log("Error procesando deep link:", error);
+    }
 }
 
 bootstrap();

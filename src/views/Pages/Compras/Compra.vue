@@ -231,6 +231,7 @@ const carrito = computed<ProductList[]>(() =>
               @click="productoSeleccionado(p)"
           >
 
+            <p class="text-[8px] font-bold absolute left-[18dvw] bottom-0.5">{{p.name_perfil}}</p>
             <div class="w-6 h-6 p-1 flex items-center justify-center text-white rounded-full"
                  :style="{background: colorFromTextStable(p.name_perfil)}">
               <icon-custom icon="user" size="md"/>

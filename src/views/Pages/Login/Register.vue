@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, isPlatform, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter
+  IonPage, IonContent, isPlatform, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter, IonModal
 } from "@ionic/vue";
 import InputContainer from "@/views/Components/InputContainer.vue";
 import InputCustom from "@/views/Components/InputCustom.vue";
@@ -31,8 +31,28 @@ const inputPass = ref({
   eye: false
 });
 
-const toast = ref({ show: false, message: "" });
-const showToast = (message: string) => { toast.value = { show: true, message }; };
+
+const dialog = ref({
+  open: false,
+  title: "Listo",
+  message: ""
+});
+
+let dialogTimer: number | null = null;
+function showToast(message: string,title: string): void {
+  dialog.value = {
+    open: true,
+    title: title,
+    message: message,
+  };
+
+  if (dialogTimer) window.clearTimeout(dialogTimer);
+  dialogTimer = window.setTimeout(() => {
+    dialog.value.open = false;
+  }, 3000);
+
+}
+
 
 function verPass(): void {
   inputPass.value.eye = !inputPass.value.eye;
@@ -56,7 +76,7 @@ const loading = ref(false);
 
 async function nuevoUser(): Promise<void> {
   if (!canSubmit.value) {
-    showToast(!passMatch.value ? 'Las contraseñas no coinciden.' : 'Revisa los campos obligatorios.');
+    showToast(!passMatch.value ? 'Las contraseñas no coinciden.' : 'Revisa los campos obligatorios.',"Info");
     return;
   }
 
@@ -70,12 +90,12 @@ async function nuevoUser(): Promise<void> {
         await useAuthStore().setSession(resp.token, resp.user);
       } else {
         // Por si el backend aún no devuelve token/user
-        showToast('El servidor no devolvió token/usuario.');
+        showToast('El servidor no devolvió token/usuario.',"Error");
         return;
       }
 
       // 2) Limpia form
-      showToast(resp.message || 'Usuario creado correctamente.');
+      showToast(resp.message || 'Usuario creado correctamente.',"Listo");
       newUser.value = { username: '', email: '', password: '' };
       confirmPass.value = '';
 
@@ -90,14 +110,14 @@ async function nuevoUser(): Promise<void> {
     }
 
     if (resp.status === 'warning') {
-      showToast(resp.message || 'El usuario ya existe.');
+      showToast(resp.message || 'El usuario ya existe.',"Aviso");
       return;
     }
 
-    showToast(resp.message || 'No se pudo registrar.');
+    showToast(resp.message || 'No se pudo registrar.',"Error");
   } catch (e: any) {
     const msg = e?.response?.data?.message || e?.message || 'Error al registrar.';
-    showToast(msg);
+    showToast(msg,"Error");
   } finally {
     loading.value = false;
   }
@@ -113,16 +133,16 @@ async function loginGoogle(): Promise<void> {
       if (resp.token && resp.user) {
         await useAuthStore().setSession(resp.token, resp.user);
       }
-      showToast("Sesión iniciada con Google.");
+      showToast("Sesión iniciada con Google.","Listo");
       router.replace("/users");
       return;
     }
 
-    showToast(resp.message || "No se pudo iniciar sesión con Google.");
+    showToast(resp.message || "No se pudo iniciar sesión con Google.","Error");
   } catch (e: any) {
     console.error("[loginGoogle] error:", e);
     const msg = e?.message || "Error inesperado en Google Login.";
-    showToast(msg);
+    showToast(msg,"Error");
   } finally {
     loading.value = false;
   }
@@ -233,12 +253,50 @@ onIonViewDidEnter(async () => {
         </div>
       </div>
 
-      <ion-toast
-          :is-open="toast.show"
-          :duration="3000"
-          :message="toast.message"
-          @didDismiss="toast.show = false"
-      />
+      <ion-modal
+          :is-open="dialog.open"
+          :backdrop-dismiss="true"
+          :show-backdrop="true"
+          class="mini-dialog"
+
+          @didDismiss="dialog.open = false"
+      >
+        <div class="mini-card">
+          <p class="mini-title">{{ dialog.title }}</p>
+          <p class="mini-msg">{{ dialog.message }}</p>
+        </div>
+      </ion-modal>
+
     </ion-content>
   </ion-page>
 </template>
+<style scoped>
+.mini-dialog {
+  --width: 85%;
+  --max-width: 320px;
+  --height: auto;
+  --border-radius: 18px;
+  --backdrop-opacity: 0.35;
+  --background: oklch(62.3% 0.214 259.815);
+}
+
+.mini-card {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mini-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  color: white;
+}
+
+.mini-msg {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
+
+</style>

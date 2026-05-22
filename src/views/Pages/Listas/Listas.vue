@@ -5,7 +5,6 @@ import {
   IonHeader,
   IonTitle,
   IonBackButton,
-  IonToast,
   IonRefresher,
   IonRefresherContent,
   IonRippleEffect, onIonViewDidEnter, IonModal,
@@ -29,6 +28,7 @@ import AvatarPerfil from "@/views/Components/AvatarPerfil.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import {ProductList} from "@/interfaces/products";
 import {Share} from "@capacitor/share";
+import ModalEditarLista from "@/views/Pages/Listas/ModalEditarLista.vue";
 
 const initialLoading = ref(false);
 
@@ -148,6 +148,7 @@ function buildShareText(listItem: miList, items: ProductList[]) {
 async function compartirLista(listItem: miList): Promise<void> {
   if (!listItem.t_products || listItem.t_products === 0) {
     openMiniDialog("No hay productos para compartir compra.","Oops");
+    return;
   }
 
   const resp = await getListDetails(listItem.userlist_id);
@@ -155,17 +156,16 @@ async function compartirLista(listItem: miList): Promise<void> {
 
   if (!productos.length) {
     openMiniDialog("No hay productos para compartir compra.","Oops");
+    return;
   }
 
-  // Opcional: pendientes arriba, comprados abajo
   const ordenados = [...productos].sort((a, b) => a.status_pro - b.status_pro);
-
   const text = buildShareText(listItem, ordenados);
 
   await Share.share({
     title: `Lista: ${listItem.name_list}`,
     text,
-    dialogTitle: 'Compartir lista',
+    dialogTitle: "Compartir lista",
   });
 }
 
@@ -194,6 +194,24 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
     await (ev.target as HTMLIonRefresherElement).complete();
   }
 }
+
+const modalEditar = ref(false);
+
+const editForm = ref<{ userlist_id: number; name_list: string } | null>(null);
+
+function openEditar(item: miList): void {
+  editForm.value = { userlist_id: item.userlist_id, name_list: item.name_list };
+  modalEditar.value = true;
+  showOpciones.value = false;
+}
+
+async function onListaActualizada(): Promise<void> {
+  modalEditar.value = false;
+  editForm.value = null;
+  await cargarMisListas();
+  openMiniDialog("Lista actualizada", "Listo");
+}
+
 
 onIonViewDidEnter(async () => {
   await ui.refresh();
@@ -286,13 +304,23 @@ onIonViewDidEnter(async () => {
           @eliminar="eliminarLista(itemOpciones.userlist_id)"
           @compra="iniciarCompra(itemOpciones)"
           @compartir="compartirLista(itemOpciones)"
+          @editar="openEditar(itemOpciones)"
       />
+
 
       <modal-agregar-lista
           v-model:is-open="modalList"
           v-model:text-input="nameList"
           @agregar="agregarLista"
       />
+
+      <modal-editar-lista
+          v-model:is-open="modalEditar"
+          :list-id="editForm?.userlist_id ?? 0"
+          :name-list="editForm?.name_list ?? ''"
+          @actualizar="onListaActualizada"
+      />
+
 
       <modal-reiniciar-lista
           v-model:is-open="modalReiniciar"

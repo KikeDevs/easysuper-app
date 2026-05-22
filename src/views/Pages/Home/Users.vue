@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, IonRippleEffect, IonFooter,
-  IonModal, IonAvatar, IonToast, IonRefresher, IonRefresherContent, onIonViewDidEnter, useIonRouter
-} from '@ionic/vue';
+  IonPage,
+  IonContent,
+  IonRippleEffect,
+  IonFooter,
+  IonModal,
+  IonAvatar,
+  IonRefresher,
+  IonRefresherContent,
+  onIonViewDidEnter,
+  useIonRouter,
+} from "@ionic/vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {computed, ref} from "vue";
-import {Profile} from "@/interfaces/types";
-import {addPerfil, edittPerfil, userPerfiles} from "@/api/UserProfiles";
+import { computed, ref } from "vue";
+import { Profile } from "@/interfaces/types";
+import { addPerfil, edittPerfil, userPerfiles } from "@/api/UserProfiles";
 import ItemUser from "@/views/Components/ItemUser.vue";
-import {useProfileStore} from "@/stores/profile";
-import {colorFromTextStable} from "@/utils/colorFromText";
+import { useProfileStore } from "@/stores/profile";
+import { colorFromTextStable } from "@/utils/colorFromText";
 
 import { verificarPermisoUbicacion } from "@/utils/ubicacionPermisos";
-import {Keyboard} from "@capacitor/keyboard";
+import { Keyboard } from "@capacitor/keyboard";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
-import {useUiStore} from "@/stores/statusbar";
+import { useUiStore } from "@/stores/statusbar";
 
 const initialLoading = ref(false);
 const ui = useUiStore();
@@ -28,11 +36,15 @@ function showToast(message: string) {
   toast.value.message = message;
 }
 
+const contentStyle = computed(() => ({
+  "--padding-bottom": ui.footerPaddingBottom + 16 + "px",
+}));
+
 const namePerfil = ref<HTMLInputElement | null>(null);
 function focusNamePerfil(): void {
   requestAnimationFrame(() => {
-    setTimeout(() => namePerfil.value?.focus(),0)
-  })
+    setTimeout(() => namePerfil.value?.focus(), 0);
+  });
 }
 function onDone(): void {
   namePerfil.value?.blur();
@@ -41,15 +53,15 @@ function onDone(): void {
 
 const editPerfil = ref({
   edit: false,
-  icon: 'pencil',
-  text: 'Editar'
+  icon: "pencil",
+  text: "Editar",
 });
 
 const showModalPerfil = ref({
   show: false,
-  tipo: 'agregar',
-  img: '',
-  username: ''
+  tipo: "agregar",
+  img: "",
+  username: "",
 });
 
 const itemPerfil = ref<Profile | null>(null);
@@ -59,16 +71,16 @@ function openModalPerfil(tipo: string, p: Profile | null): void {
     showModalPerfil.value = {
       show: true,
       tipo: "agregar",
-      img: '',
-      username: '',
-    }
+      img: "",
+      username: "",
+    };
   } else {
     showModalPerfil.value = {
       show: true,
-      tipo: 'editar',
-      img: '',
-      username: p?.name_perfil ?? '',
-    }
+      tipo: "editar",
+      img: "",
+      username: p?.name_perfil ?? "",
+    };
   }
 }
 
@@ -80,27 +92,27 @@ function editarPerfiles(): void {
   if (editPerfil.value.edit) {
     editPerfil.value = {
       edit: false,
-      icon: 'pencil',
-      text: 'Editar'
-    }
+      icon: "pencil",
+      text: "Editar",
+    };
   } else {
     editPerfil.value = {
       edit: true,
-      icon: 'cross',
-      text: 'Listo'
-    }
+      icon: "cross",
+      text: "Listo",
+    };
   }
 }
 
-const Profiles = ref<Profile[]>([])
+const Profiles = ref<Profile[]>([]);
 async function userProfiles(): Promise<void> {
   const resp = await userPerfiles();
 
-  if (resp.status === "ok"){
+  if (resp.status === "ok") {
     Profiles.value = resp.profiles ? resp.profiles : [];
   }
 
-  if (resp.status === "error"){
+  if (resp.status === "error") {
     showToast(resp.message);
   }
 }
@@ -119,11 +131,10 @@ async function checkLocationPermiso(): Promise<void> {
 }
 
 async function onSelectProfile(p: Profile): Promise<void> {
-
   profileStore.select(p);
   profileStore.setLocationGranted(locationGranted.value);
 
-  ion.replace('/home');
+  ion.replace("/home");
 }
 function withTimeout<T>(p: Promise<T>, ms = 1800): Promise<T> {
   return Promise.race([
@@ -132,50 +143,29 @@ function withTimeout<T>(p: Promise<T>, ms = 1800): Promise<T> {
   ]);
 }
 
-const requestingLocation = ref(false);
-
-async function initLocationOnUsersEnter(): Promise<void> {
-  if (requestingLocation.value) return;
-  requestingLocation.value = true;
-
-  try {
-    const granted = await withTimeout(verificarPermisoUbicacion(), 1800);
-    locationGranted.value = !!granted;
-    profileStore.setLocationGranted(!!granted);
-
-    if (!granted) {
-      showToast("Ubicación desactivada. Ofertas cercanas estarán bloqueadas.");
-    }
-  } catch {
-    // Si Android 10 se cuelga, NO rompemos la pantalla ni bloqueamos taps
-    locationGranted.value = false;
-    profileStore.setLocationGranted(false);
-  } finally {
-    requestingLocation.value = false;
-  }
-}
-
-
 const bg = computed(() => colorFromTextStable(showModalPerfil.value.username));
 
 async function agregarPerfil(): Promise<void> {
   const resp = await addPerfil(showModalPerfil.value.username);
   showToast(resp.message);
-  Profiles.value = []
+  Profiles.value = [];
   await userProfiles();
   closeAddPerfil();
 }
 async function editarPerfil(): Promise<void> {
-  const resp = await edittPerfil(itemPerfil.value?.profile_id ?? null,showModalPerfil.value.username);
+  const resp = await edittPerfil(
+    itemPerfil.value?.profile_id ?? null,
+    showModalPerfil.value.username,
+  );
   showToast(resp.message);
-  Profiles.value = []
+  Profiles.value = [];
   await userProfiles();
 
   editPerfil.value = {
     edit: false,
-    icon: 'pencil',
-    text: 'Editar'
-  }
+    icon: "pencil",
+    text: "Editar",
+  };
 
   closeAddPerfil();
 }
@@ -195,53 +185,76 @@ async function doRefresh(ev: CustomEvent): Promise<void> {
   }
 }
 
+const showInfoModal = ref(false);
+
+function openInfoModal(): void {
+  showInfoModal.value = true;
+}
+function closeInfoModal(): void {
+  showInfoModal.value = false;
+}
 
 onIonViewDidEnter(async () => {
   await ui.refresh();
   initialLoading.value = true;
   try {
-    await Promise.all([checkLocationPermiso(),userProfiles()])
+    await Promise.all([checkLocationPermiso(), userProfiles()]);
   } finally {
     initialLoading.value = false;
   }
 });
 </script>
 
-
 <template>
   <ion-page>
-    <ion-content class="ion-padding">
-
+    <ion-content class="ion-padding" :style="contentStyle">
       <ion-refresher slot="fixed" @ionRefresh="doRefresh" class="mt-8">
         <ion-refresher-content
-            pulling-text="Desliza para recargar"
-            refreshing-text="Actualizando..."
-            refreshing-spinner="lines"
+          pulling-text="Desliza para recargar"
+          refreshing-text="Actualizando..."
+          refreshing-spinner="lines"
         />
       </ion-refresher>
 
-      <div class="w-full h-full flex flex-col justify-center items-center gap-3 pt-6">
+      <div
+        class="w-full h-full flex flex-col justify-center items-center gap-3 pt-6"
+      >
         <div class="w-full flex flex-col items-center relative">
-          <div class="absolute overflow-hidden flex rounded-full p-1 right-0 ion-activatable not-dark:text-blue-400 dark:bg-[#2a2a2a]">
-            <icon-custom icon="info" size="2xl"/>
-            <ion-ripple-effect/>
+          <div
+            class="absolute overflow-hidden flex rounded-full p-1 right-0 ion-activatable not-dark:text-blue-400 dark:bg-[#2a2a2a]"
+            @click="openInfoModal"
+          >
+            <icon-custom icon="info" size="2xl" />
+            <ion-ripple-effect />
           </div>
-          <img class="w-24 h-24" src="/assets/logo.png" alt="">
-          <p class="text-xl font-bold text-blue-400 dark:text-white">SELECCIONA UN PERFIL</p>
+          <img class="w-24 h-24" src="/assets/logo.png" alt="" />
+          <p class="text-xl font-bold text-blue-400 dark:text-white">
+            SELECCIONA UN PERFIL
+          </p>
         </div>
 
         <!--Recargar metodo userProfiles con un reload como en las apps?-->
         <div class="w-full h-full flex-1 flex items-end">
           <div class="w-full grid grid-cols-2 gap-2">
-            <item-user v-for="(s,i) in Profiles" :key="i" :profile="s"
-                       :edit="editPerfil.edit"
-                       @edit="openModalPerfil('editar', s)"
-                       @select="onSelectProfile(s)"/>
+            <item-user
+              v-for="(s, i) in Profiles"
+              :key="i"
+              :profile="s"
+              :edit="editPerfil.edit"
+              @edit="openModalPerfil('editar', s)"
+              @select="onSelectProfile(s)"
+            />
 
-            <div v-if="!(Profiles.length > 11)" class="w-full h-full flex flex-col items-center justify-center gap-1">
-              <ion-avatar class="ion-activatable overflow-hidden bg-blue-400 text-white relative w-24 h-24 flex items-center justify-center not-dark:shadow-lg"  @click="openModalPerfil('agregar', null)">
-                <icon-custom icon="plus" size="6xl"/>
-                <ion-ripple-effect/>
+            <div
+              v-if="!(Profiles.length > 11)"
+              class="w-full h-full flex flex-col items-center justify-center gap-1"
+            >
+              <ion-avatar
+                class="ion-activatable overflow-hidden bg-blue-400 text-white relative w-24 h-24 flex items-center justify-center not-dark:shadow-lg"
+                @click="openModalPerfil('agregar', null)"
+              >
+                <icon-custom icon="plus" size="6xl" />
+                <ion-ripple-effect />
               </ion-avatar>
               <p class="text-sm opacity-0">Agregar</p>
             </div>
@@ -249,42 +262,63 @@ onIonViewDidEnter(async () => {
         </div>
       </div>
 
-      <ion-modal v-model:is-open="showModalPerfil.show"
-                 @didPresent="focusNamePerfil"
-                 @didDismiss="closeAddPerfil">
+      <ion-modal
+        v-model:is-open="showModalPerfil.show"
+        @didPresent="focusNamePerfil"
+        @didDismiss="closeAddPerfil"
+      >
         <div class="w-full flex flex-col gap-3 px-3 pt-3 pb-5">
           <div class="w-full flex items-center">
-            <p class="w-full text-xl">{{ showModalPerfil.tipo === 'agregar' ? 'Agregar' : 'Editar'  }}</p>
-            <div class="flex items-center relative overflow-hidden rounded-full ion-activatable p-1">
-              <icon-custom icon="cross-small" @click="showModalPerfil.show = false"/>
-              <ion-ripple-effect/>
+            <p class="w-full text-xl">
+              {{ showModalPerfil.tipo === "agregar" ? "Agregar" : "Editar" }}
+            </p>
+            <div
+              class="flex items-center relative overflow-hidden rounded-full ion-activatable p-1"
+            >
+              <icon-custom
+                icon="cross-small"
+                @click="showModalPerfil.show = false"
+              />
+              <ion-ripple-effect />
             </div>
           </div>
           <div class="w-full flex flex-col items-center gap-4">
             <div class="w-fit h-fit relative overflow-hidden rounded-lg">
-              <ion-avatar class="w-24 h-24 flex items-center justify-center rounded-full overflow-hidden"
-                          :style="showModalPerfil.username === '' ? {background: '#2b7fff'} : {background: bg}"
+              <ion-avatar
+                class="w-24 h-24 flex items-center justify-center rounded-full overflow-hidden"
+                :style="
+                  showModalPerfil.username === ''
+                    ? { background: '#2b7fff' }
+                    : { background: bg }
+                "
               >
-                <icon-custom icon="user" size="6xl" class="text-white"/>
+                <icon-custom icon="user" size="6xl" class="text-white" />
               </ion-avatar>
             </div>
 
-            <div class="rounded-full flex w-full px-3 items-center gap-2 dark:bg-[#2a2a2a] not-dark:bg-gray-200">
+            <div
+              class="rounded-full flex w-full px-3 items-center gap-2 dark:bg-[#2a2a2a] not-dark:bg-gray-200"
+            >
               <div class="flex items-center">
                 <icon-custom icon="user" />
-                <input ref="namePerfil"
-                       v-model="showModalPerfil.username"
-                       type="text"
-                       placeholder="Nombre perfil"
-                       class="flex-1 w-full p-2 focus:outline-none focus:ring-0"
-                       @keydown.enter="onDone"
-                >
+                <input
+                  ref="namePerfil"
+                  v-model="showModalPerfil.username"
+                  type="text"
+                  placeholder="Nombre perfil"
+                  class="flex-1 w-full p-2 focus:outline-none focus:ring-0"
+                  @keydown.enter="onDone"
+                />
               </div>
             </div>
 
-
             <div class="w-full">
-              <btn-primary size="large" shape="round" class="w-full" @click="actionModal">
+              <btn-primary
+                size="large"
+                shape="round"
+                class="w-full"
+                @click="actionModal"
+              >
                 Aceptar
               </btn-primary>
             </div>
@@ -292,16 +326,69 @@ onIonViewDidEnter(async () => {
         </div>
       </ion-modal>
 
-      <loader-normal
-          :open="initialLoading"
-      />
+      <ion-modal
+        :is-open="showInfoModal"
+        @didDismiss="closeInfoModal"
+        class="info-modal"
+      >
+        <div class="w-full flex flex-col gap-4 px-4 pt-4 pb-6">
+          <div class="w-full flex items-center justify-between">
+            <p class="text-lg font-bold">Perfiles</p>
 
+            <div
+              class="flex items-center relative overflow-hidden rounded-full ion-activatable p-1"
+              @click="closeInfoModal"
+            >
+              <icon-custom icon="cross-small" />
+              <ion-ripple-effect />
+            </div>
+          </div>
+
+          <div class="text-sm leading-6 opacity-90">
+            <p>
+              Los perfiles funcionan de esta forma: Cada persona puede tener su
+              propio perfil dentro de la misma cuenta.
+            </p>
+
+            <div class="mt-3">
+              <p class="font-semibold">¿Para qué sirven?</p>
+              <ul class="list-disc pl-5 mt-2 flex flex-col gap-1">
+                <li>Puedes crear perfiles.</li>
+                <li>
+                  Al agregar un producto aparecera el perfil de quien lo agrego.
+                </li>
+                <li>Puedes editar el nombre de un perfil cuando quieras.</li>
+                <li>Selecciona un perfil para entrar a la app.</li>
+              </ul>
+            </div>
+          </div>
+
+          <btn-primary
+            size="large"
+            shape="round"
+            class="w-full"
+            @click="closeInfoModal"
+          >
+            Entendido
+          </btn-primary>
+        </div>
+      </ion-modal>
+
+      <loader-normal :open="initialLoading" />
     </ion-content>
     <ion-footer class="ion-no-border">
-      <div class="w-full flex gap-2 px-2 mt-2 mb-2" :style="{paddingBottom: ui.footerPaddingBottom + 'px'}">
-        <btn-primary shape="round" size="large" class="w-full" @click="editarPerfiles">
+      <div
+        class="w-full flex gap-2 px-2 mt-2 mb-2"
+        :style="{ paddingBottom: ui.footerPaddingBottom + 'px' }"
+      >
+        <btn-primary
+          shape="round"
+          size="large"
+          class="w-full"
+          @click="editarPerfiles"
+        >
           <div class="flex items-center gap-2">
-            <icon-custom :icon="editPerfil.icon"/>
+            <icon-custom :icon="editPerfil.icon" />
             {{ editPerfil.text }}
           </div>
         </btn-primary>
@@ -311,11 +398,20 @@ onIonViewDidEnter(async () => {
 </template>
 
 <style scoped>
-ion-modal{
+ion-modal {
   --width: fit-content;
   --min-width: 300px;
   --height: fit-content;
   --border-radius: 10px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+}
+
+ion-modal.info-modal {
+  --width: fit-content;
+  --min-width: 320px;
+  --max-width: 95%;
+  --height: fit-content;
+  --border-radius: 12px;
   --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
 }
 </style>

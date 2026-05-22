@@ -7,6 +7,7 @@ import {
   IonRippleEffect,
   IonToast,
 } from "@ionic/vue";
+import {SpeechRecognition} from "@capacitor-community/speech-recognition";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import ItemProductoLista from "@/views/Pages/Listas/ItemProductoLista.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
@@ -24,6 +25,7 @@ import ModalAgregarLista from "@/views/Pages/Listas/ModalAgregarLista.vue";
 import {useProfileStore} from "@/stores/profile";
 import {useUiStore} from "@/stores/statusbar";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
+import ModalNuevoProducto from "@/views/Layouts/ModalNuevoProducto.vue";
 
 const ui = useUiStore();
 const initialLoading = ref(false);
@@ -350,6 +352,78 @@ async function agregarProductosHome(l: miList): Promise<void> {
     await resetBuscadorAOriginal();
   }
 }
+//Mircrofono pedidp cliente
+const isListening = ref(false);
+
+async function startVoiceSearch(): Promise<void> {
+  if (isListening.value) return;
+
+  try {
+    const available = await SpeechRecognition.available();
+    if (!available.available) {
+      showToast('La búsqueda por voz no está disponible en este dispositivo.');
+      return;
+    }
+
+    const perm = await SpeechRecognition.requestPermissions();
+    if (perm.speechRecognition !== 'granted') {
+      showToast('No se otorgó permiso al micrófono.');
+      return;
+    }
+
+    isListening.value = true;
+
+    const result = await SpeechRecognition.start({
+      language: 'es-MX',
+      partialResults: false,
+      popup: true,
+      maxResults: 1,
+    });
+
+    const text = result?.matches?.[0]?.trim() ?? '';
+
+    if (text !== '') {
+      searchBar.value = text;
+
+      const depId = departamentSelect.value?.departament_id ?? 0;
+
+      if (text.length >= 2) {
+        await searchArticulos(depId);
+      } else {
+        await allArticulos(depId);
+      }
+    }
+  } catch {
+    showToast('No se pudo iniciar el micrófono.');
+  } finally {
+    isListening.value = false;
+  }
+}
+
+async function stopVoiceSearch(): Promise<void> {
+  try {
+    await SpeechRecognition.stop();
+  } catch {
+  } finally {
+    isListening.value = false;
+  }
+}
+
+async function toggleVoiceSearch(): Promise<void> {
+  if (isListening.value) {
+    await stopVoiceSearch();
+    return;
+  }
+
+  await startVoiceSearch();
+}
+
+//Producto nuevo
+const modalNuevoProducto = ref(false);
+
+function openNuevoProducto(): void {
+  modalNuevoProducto.value = true;
+}
 
 
 watch(isOpen, async (open) => {
@@ -362,6 +436,9 @@ watch(isOpen, async (open) => {
     await Promise.all([obDepartamentos(), cargarMisListas(), obBrands()]);
     await allArticulos(0);
   }
+
+  modalNuevoProducto.value = false;
+  await stopVoiceSearch();
 });
 
 </script>
@@ -382,8 +459,9 @@ watch(isOpen, async (open) => {
             </div>
           </template>
           <div class="w-full px-1">
-            <div class="border-1 border-gray-300 rounded-full flex gap-1 items-center pl-2 dark:bg-[#2a2a2a] dark:border-0">
+            <div class="border-1 border-gray-300 rounded-full flex gap-1 items-center pl-2 pr-1 dark:bg-[#2a2a2a] dark:border-0">
               <icon-custom icon="search" size="md"/>
+
               <input
                   ref="searchE1"
                   v-model="searchBar"
@@ -393,6 +471,16 @@ watch(isOpen, async (open) => {
                   @input="onSearchInput"
                   @keydown.escape.prevent="resetBuscadorAOriginal"
               />
+
+              <button
+                  type="button"
+                  class="relative ion-activatable overflow-hidden flex items-center justify-center p-2 rounded-full"
+                  :class="isListening ? 'text-blue-500' : 'text-gray-600 dark:text-white'"
+                  @click="toggleVoiceSearch"
+              >
+                <icon-custom icon="microphone" size="md" />
+                <ion-ripple-effect />
+              </button>
             </div>
           </div>
           <template #end>
@@ -408,9 +496,6 @@ watch(isOpen, async (open) => {
                 {{departamentSelect == null ? 'Todos' : departamentSelect?.name_departament}}
               </p>
             </div>
-            <p>
-              Artículos: <span class="font-bold">{{getArticulos.length}}</span>
-            </p>
           </div>
           <div v-else class="w-full pt-2 px-3 flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden">
             <div class="rounded-full px-2 py-1 text-base w-fit"
@@ -428,6 +513,22 @@ watch(isOpen, async (open) => {
       </ion-header>
 
       <ion-content :fullscreen="true" class="ion-padding" :class="contentStyle">
+
+        <div
+            v-if="!initialLoading"
+            class="mb-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-white/10 dark:bg-[#2a2a2a] dark:text-white"
+        >
+          <p>Si no encuentras el producto que estás buscando, agrégalo tú mismo.</p>
+
+          <div class="mt-3">
+            <btn-primary shape="round" size="large" @click="openNuevoProducto">
+              <div class="flex items-center gap-2">
+                <icon-custom icon="plus"/>
+                <p>Agregar nuevo producto</p>
+              </div>
+            </btn-primary>
+          </div>
+        </div>
 
         <!-- Brands (solo al inicio, NO sticky) -->
         <div v-if="brands.length > 0" class="mb-4 -mx-4 px-4 pt-3 pb-2">
@@ -463,7 +564,7 @@ watch(isOpen, async (open) => {
                     :class="[selectedBrand?.brand_id === bp.brand_id ? 'ring-blue-400' : '']"
                 >
                   <img
-                      :src="'http://srv1170449.hstgr.cloud/images/brands/' + bp.name_brand + '.png'"
+                      :src="'https://easysuper.cloud/images/brands/' + bp.name_brand + '.png'"
                       :alt="bp.name_brand"
                       loading="lazy"
                   >
@@ -658,6 +759,11 @@ watch(isOpen, async (open) => {
           <ion-ripple-effect/>
         </div>
       </div>
+
+      <modal-nuevo-producto
+          v-model:is-open="modalNuevoProducto"
+          :categorias="departaments"
+      />
 
     </ion-page>
   </ion-modal>

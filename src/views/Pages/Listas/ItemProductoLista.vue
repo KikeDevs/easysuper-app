@@ -2,75 +2,86 @@
 import IconCustom from "@/views/Components/IconCustom.vue";
 import {Product, ProductList} from "@/interfaces/products";
 import {computed} from "vue";
+import {getUrlBase} from "@/services/services";
 
 const props = defineProps<{
   item?: Product,
   itemDetails?: ProductList
 }>();
 
-const DEPT_ICON: Record<number, string> = {
-  1: "grocery-bag",                // Abarrotes
-  2: "milk-alt",                  // Lácteos
-  3: "apple-whole",                 // Frutas y verduras
-  4: "beer",                  // Cervezas, vinos y licores
-  5: "sausage",               // Salchichonería
-  6: "candle-lotus-yoga",                   // Belleza y cuidado personal
-  7: "water-bottle",              // Jugos y bebidas
-  8: "fish",                  // Carnes, pescados y mariscos
-  9: "snowflake",             // Congelados
-  10: "tshirt",               // Cuidado de la ropa
-  11: "toilet-paper-blank-under",         // Higiénicos
-  12: "home-care",            // Cuidado del hogar
-  13: "bread",                // Panadería
-  14: "baby",                 // Bebés
-  15: "paw",                  // Mascotas
-  16: "capsules",                 // Farmacia
+const CATEGORY_ICON: Record<number, string> = {
+  1: "oil-can",                  // Aceites y Grasas Vegetales
+  2: "utensils",                 // Alimentos Preparados y Cocinados
+  3: "wheat",                    // Arroz y Cereales
+  4: "toilet-paper-blank-under", // Artículos de Papel de Higiene Personal
+  5: "candle-lotus-yoga",        // Artículos para el Cuidado Personal
+  6: "cube",                     // Azúcar
+  7: "mug-hot",                  // Café
+  8: "meat",                     // Carnes
+  9: "sausage",                  // Carnes Frías Secas y Embutidos
+  10: "candy",                   // Chocolates y Golosinas
+  11: "pepper-hot",              // Condimentos, Especias y Sales
+  12: "jar-alt",                     // Conservas
+  13: "milk-alt",                // Derivados de Leche
+  14: "spray-can-sparkles",      // Detergentes
+  15: "plug",                    // Electrónica
+  16: "capsules",                // Farmacia
+  17: "apple-whole",             // Frutas Frescas
+  18: "cookie",                  // Galletas
+  19: "carrot",                  // Hortalizas Frescas
+  20: "egg",                     // Huevo
+  21: "seedling",                // Legumbres Secas
+  22: "paw",                     // Mascotas
+  23: "pills",                   // Medicamentos
+  24: "box",                     // Miscelánea
+  25: "bread-slice",             // Pan
+  26: "wheat",                   // Pastas y Harinas de Trigo
+  27: "fish",                    // Pescados y Mariscos
+  28: "water-bottle",            // Refrescos Envasados
+  29: "seedling",                // Semillas
+  30: "cheese",                  // Tortillas y Derivados del Maíz
+  31: "detergent",               // Utensilios Domésticos
+  32: "wine-bottle"              // Vinos, Licores y Cerveza
 };
 
-// 2) Obtén el departament_id desde item o itemDetails
-const departamentId = computed<number | null>(() =>
-    (props.item as any)?.departament_id
-    ?? (props.itemDetails as any)?.departament_id
+// ahora tomamos category_id
+const categoryId = computed<number | null>(() =>
+    (props.item as any)?.category_id
+    ?? (props.itemDetails as any)?.category_id
     ?? null
 );
 
-// 3) Computed del icono (con fallback)
-const deptIcon = computed<string>(() => {
-  const id = departamentId.value ?? -1;
-  return DEPT_ICON[id] ?? "box"; // "box" o el que quieras como default
+const categoryIcon = computed<string>(() => {
+  const id = categoryId.value ?? -1;
+  return CATEGORY_ICON[id] ?? "box";
 });
-
 </script>
 
 <template>
   <div class="relative flex items-center gap-2 py-2.5 border-b border-b-gray-400">
-    <!-- avatar / icono -->
     <div class="bg-gray-200 rounded-full w-14 h-14 overflow-hidden flex justify-center items-center">
-      <!-- LOGO: solo si hay marca y patrocinio -->
       <img
-          v-if="item?.brand && item?.patrocinio === 1"
-          :src="'http://srv1170449.hstgr.cloud/images/brands/' + item.brand + '.png'"
-          :alt="item.brand"
+          v-if="item?.name_brand && Number(item?.patrocinio) === 1"
+          :src="getUrlBase(`images/brands/${item.name_brand}.png`)"
+          :alt="item.name_brand"
           class="w-full h-full object-cover"
       />
 
       <img
-          v-else-if="itemDetails?.brand && itemDetails?.patrocinio === 1"
-          :src="'http://srv1170449.hstgr.cloud/images/brands/' + itemDetails.brand + '.png'"
-          :alt="itemDetails.brand"
+          v-else-if="itemDetails?.name_brand && Number(itemDetails?.patrocinio) === 1"
+          :src="getUrlBase(`images/brands/${itemDetails.name_brand}.png`)"
+          :alt="itemDetails.name_brand"
           class="w-full h-full object-cover"
       />
 
-      <!-- ICONO: todos los demás casos -->
       <icon-custom
           v-else
-          :icon="deptIcon"
+          :icon="categoryIcon"
           size="3xl"
           class="not-dark:text-blue-500 dark:text-gray-800"
       />
     </div>
 
-    <!-- texto -->
     <div class="flex-1 w-full text-wrap flex flex-col justify-center">
       <p class="font-bold">
         {{ item?.name_product ?? itemDetails?.name_product ?? 'Producto' }}
@@ -82,5 +93,4 @@ const deptIcon = computed<string>(() => {
 
     <slot/>
   </div>
-
 </template>
