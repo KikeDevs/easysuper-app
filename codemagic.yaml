@@ -102,3 +102,10 @@ workflows:
       - "**/*.ipa"
       - "**/*.xcarchive"
       - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        apple_id: "6773418692"
+        submit_to_testflight: true
+        submit_to_app_store: false
