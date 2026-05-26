@@ -48,14 +48,12 @@ workflows:
           cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE_UUID.mobileprovision
           echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
 
-      - name: Set up code signing settings
-        script: xcode-project use-profiles
-
       - name: Build & archive iOS
         script: |
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_UUID CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=FRTBXBGQ9G CODE_SIGN_IDENTITY='Apple Distribution'"
 
     artifacts:
       - build/ios/ipa/*.ipa
