@@ -126,7 +126,7 @@ const brandsFromProducts = computed<BrandLite[]>(() => {
   const m = new Map<number, BrandLite>();
   for (const p of getArticulos.value) {
     if (p.brand_id == null) continue;
-    const name = p.brand ?? "";
+    const name = p.name_brand ?? "";
     if (!name) continue;
 
     const id = p.brand_id;

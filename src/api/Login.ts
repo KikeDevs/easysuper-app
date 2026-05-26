@@ -34,10 +34,12 @@ export async function loginWithGoogle(): Promise<LoginResponse> {
 
         console.log("[GoogleLogin] result:", loginResult);
 
+        const result = loginResult as any;
+
         const profile =
-            loginResult?.result?.profile ||
-            loginResult?.profile ||
-            loginResult?.result;
+            result?.result?.profile ||
+            result?.profile ||
+            result?.result;
 
         const email = profile?.email;
         const username = profile?.name || profile?.givenName || email;
@@ -45,9 +47,9 @@ export async function loginWithGoogle(): Promise<LoginResponse> {
         // Si el plugin aún así devuelve algún idToken, lo mandamos como extra,
         // pero tu back ya no lo exige.
         const idToken =
-            loginResult?.result?.idToken ||
-            loginResult?.authentication?.idToken ||
-            loginResult?.result?.authentication?.idToken ||
+            result?.result?.idToken ||
+            result?.authentication?.idToken ||
+            result?.result?.authentication?.idToken ||
             null;
 
         if (!email) {

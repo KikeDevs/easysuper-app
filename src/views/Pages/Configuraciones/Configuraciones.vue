@@ -1,4 +1,11 @@
 <script setup lang="ts">
+declare global {
+  interface Window {
+    Capacitor?: {
+      isNativePlatform?: () => boolean;
+    };
+  }
+}
 import {
   IonPage,
   IonContent,
