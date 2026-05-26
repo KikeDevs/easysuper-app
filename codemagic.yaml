@@ -50,6 +50,7 @@ workflows:
 
       - name: Build & archive iOS
         script: |
+          set -o pipefail
           ARCHIVE_PATH="$CM_BUILD_DIR/ios/App.xcarchive"
           IPA_DIR="$CM_BUILD_DIR/ios/ipa"
           EXPORT_PLIST="/tmp/export_options.plist"
@@ -64,8 +65,7 @@ workflows:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=FRTBXBGQ9G \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-            | xcpretty
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID"
 
           # Paso 2: Crear export options
           cat > $EXPORT_PLIST << EOF
@@ -96,9 +96,9 @@ workflows:
             -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
-            -exportOptionsPlist "$EXPORT_PLIST" \
-            | xcpretty
+            -exportOptionsPlist "$EXPORT_PLIST"
 
     artifacts:
-      - $CM_BUILD_DIR/ios/ipa/*.ipa
+      - "**/*.ipa"
+      - "**/*.xcarchive"
       - /tmp/xcodebuild_logs/*.log
