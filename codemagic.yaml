@@ -5,13 +5,14 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
+      groups:
+        - ios-vars
       ios_signing:
-        distribution_type: app_store   # "app_store" para IPA firmado para App Store / TestFlight
+        distribution_type: app_store
         bundle_identifier: com.easysuper.app
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        GOOGLE_MAPS_API_KEY: $GOOGLE_MAPS_API_KEY
       node: 20.x
       xcode: latest
       cocoapods: default
