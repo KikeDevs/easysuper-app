@@ -3,18 +3,20 @@ import {
   IonPage, IonContent, IonImg, IonBackButton, IonButton,
   IonToast, isPlatform, useIonRouter, IonHeader, onIonViewDidEnter, IonModal
 } from "@ionic/vue";
+import { Capacitor } from "@capacitor/core";
 import InputCustom from "@/views/Components/InputCustom.vue";
 import { computed, ref } from "vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import InputContainer from "@/views/Components/InputContainer.vue";
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
-import {loginWithGoogle, logUser} from "@/api/Login";
+import {loginWithGoogle, loginWithApple, logUser} from "@/api/Login";
 import { useAuthStore } from "@/stores/auth";
 import {useUiStore} from "@/stores/statusbar";
 
 const ionRouter = useIonRouter();
 const ui = useUiStore();
+const isIos = Capacitor.getPlatform() === "ios";
 
 const dialog = ref({
   open: false,
@@ -94,6 +96,26 @@ async function inUser(): Promise<void> {
   }
 }
 
+
+async function loginApple(): Promise<void> {
+  loading.value = true;
+  try {
+    const resp = await loginWithApple();
+    if (resp.status === "ok") {
+      if (resp.token && resp.user) {
+        await useAuthStore().setSession(resp.token, resp.user);
+      }
+      showToast("Sesión iniciada con Apple.", "Listo");
+      ionRouter.replace("/users");
+      return;
+    }
+    showToast(resp.message || "No se pudo iniciar sesión con Apple.", "Error");
+  } catch (e: any) {
+    showToast(e?.message || "Error inesperado en Apple Login.", "Error");
+  } finally {
+    loading.value = false;
+  }
+}
 
 async function loginGoogle(): Promise<void> {
   loading.value = true;
@@ -207,12 +229,12 @@ onIonViewDidEnter(async ()=> {
               </div>
             </btn-secondary>
 
-            <!--<btn-secondary v-if="isIos" class="w-full">
+            <btn-secondary v-if="isIos" class="w-full mt-1" @click="loginApple">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/logotipo-de-apple.png" alt="">
                 Continuar con Apple
               </div>
-            </btn-secondary>-->
+            </btn-secondary>
 
             <div class="w-full flex justify-center items-center gap-1 pt-2">
               <p class="font-bold">¿Aun no tienes una cuenta?</p>

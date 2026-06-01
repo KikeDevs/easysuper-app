@@ -33,3 +33,20 @@ export async function updateUser(pass: string, name: string): Promise<userRespon
         return { status: "error", message };
     }
 }
+
+interface deleteResponse {
+    status: 'ok' | 'error' | 'warning'
+    message: string
+}
+
+export async function deleteAccount(): Promise<deleteResponse> {
+    try {
+        const resp = await api.post<deleteResponse>('delete-account', {});
+        return resp.data;
+    } catch (error: any) {
+        const message = error?.response?.data?.message
+            ?? error?.message
+            ?? "Error al eliminar la cuenta";
+        return { status: "error", message };
+    }
+}

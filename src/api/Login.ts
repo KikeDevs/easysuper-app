@@ -77,6 +77,41 @@ export async function loginWithGoogle(): Promise<LoginResponse> {
 
 
 
+export async function loginWithApple(): Promise<LoginResponse> {
+    try {
+        const device_name = await getDeviceName();
+        const loginResult = await SocialLogin.login({
+            provider: "apple",
+            options: { scopes: ["email", "name"] }
+        });
+
+        const result = loginResult as any;
+        const profile = result?.result?.profile || result?.profile || result?.result;
+        const email = profile?.email;
+        const username = profile?.name || profile?.givenName || email;
+        const idToken = result?.result?.idToken || result?.authentication?.idToken || null;
+
+        if (!email && !idToken) {
+            return { status: "error", message: "No se pudo obtener los datos de Apple." };
+        }
+
+        const resp = await api.post<LoginResponse>("login-apple", {
+            email,
+            username,
+            device_name,
+            id_token: idToken,
+        });
+
+        return resp.data;
+    } catch (error: any) {
+        const message =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Error al iniciar sesión con Apple.";
+        return { status: "error", message };
+    }
+}
+
 interface logOutResponse {
     status: "error" | "ok" | "cancel";
     message: string;

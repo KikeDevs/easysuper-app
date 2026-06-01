@@ -3,16 +3,44 @@ import {IonPage, IonBackButton, IonRippleEffect, onIonViewDidEnter, IonToast, Io
 import ToolbarCustom from "@/views/Components/ToolbarCustom.vue";
 import CardCustom from "@/views/Components/CardCustom.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
-import {getUser, updateUser} from "@/api/Configuraciones";
+import {getUser, updateUser, deleteAccount} from "@/api/Configuraciones";
 import {User} from "@/interfaces/configs";
 import {computed, ref} from "vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
 import LoaderNormal from "@/views/Components/LoaderNormal.vue";
 import {useUiStore} from "@/stores/statusbar";
+import {alertController} from "@ionic/vue";
+import {useAuthStore} from "@/stores/auth";
+import {useRouter} from "vue-router";
 
 const initialLoading = ref(false);
-
 const ui = useUiStore();
+const auth = useAuthStore();
+const router = useRouter();
+
+async function confirmDeleteAccount(): Promise<void> {
+  const alert = await alertController.create({
+    header: "Eliminar cuenta",
+    message: "Esta acción es permanente. Se eliminarán todos tus datos, listas y perfiles. ¿Estás seguro?",
+    buttons: [
+      { text: "Cancelar", role: "cancel" },
+      {
+        text: "Eliminar",
+        role: "destructive",
+        handler: async () => {
+          const resp = await deleteAccount();
+          if (resp.status === "ok") {
+            await auth.logoutAndReset();
+            await router.replace("/");
+          } else {
+            showToast(resp.message || "No se pudo eliminar la cuenta.");
+          }
+        }
+      }
+    ]
+  });
+  await alert.present();
+}
 
 const toast = ref({ show: false, message: "" });
 const showToast = (message: string) => { toast.value = { show: true, message }; };
@@ -136,6 +164,16 @@ onIonViewDidEnter(async () => {
       </card-custom>
 
 
+
+      <card-custom class="mt-5">
+        <div
+            class="p-3 flex items-center justify-between ion-activatable relative overflow-hidden"
+            @click="confirmDeleteAccount"
+        >
+          <p class="text-red-500 font-semibold">Eliminar cuenta</p>
+          <ion-ripple-effect/>
+        </div>
+      </card-custom>
 
       <!-- Toast -->
       <ion-toast

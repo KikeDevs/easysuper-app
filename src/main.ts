@@ -89,10 +89,11 @@ async function initSocialLogin(): Promise<void> {
     const WEB_CLIENT_ID = '44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com';
     if (Capacitor.getPlatform() === "android" || Capacitor.getPlatform() === "ios") {
         await SocialLogin.initialize({
-            google:{
-                webClientId:WEB_CLIENT_ID,
-                mode:'online'
-            }
+            google: {
+                webClientId: WEB_CLIENT_ID,
+                mode: 'online'
+            },
+            apple: {}
         });
     }
 }
