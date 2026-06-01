@@ -13,7 +13,7 @@ import {useAuthStore} from "@/stores/auth";
 import {useProfileStore} from "@/stores/profile";
 import { addUser } from "@/api/Register";
 import {useUiStore} from "@/stores/statusbar";
-import {loginWithGoogle} from "@/api/Login";
+import {loginWithGoogle, loginWithApple} from "@/api/Login";
 
 const isIos = computed(() => isPlatform('ios'));
 const router = useIonRouter();
@@ -118,6 +118,26 @@ async function nuevoUser(): Promise<void> {
   } catch (e: any) {
     const msg = e?.response?.data?.message || e?.message || 'Error al registrar.';
     showToast(msg,"Error");
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function loginApple(): Promise<void> {
+  loading.value = true;
+  try {
+    const resp = await loginWithApple();
+    if (resp.status === "ok") {
+      if (resp.token && resp.user) {
+        await useAuthStore().setSession(resp.token, resp.user);
+      }
+      showToast("Sesión iniciada con Apple.", "Listo");
+      router.replace("/users");
+      return;
+    }
+    showToast(resp.message || "No se pudo iniciar sesión con Apple.", "Error");
+  } catch (e: any) {
+    showToast(e?.message || "Error inesperado en Apple Login.", "Error");
   } finally {
     loading.value = false;
   }
@@ -243,12 +263,12 @@ onIonViewDidEnter(async () => {
               </div>
             </btn-secondary>
 
-            <!--<btn-secondary v-if="isIos" class="w-full">
+            <btn-secondary v-if="isIos" class="w-full mt-1" @click="loginApple">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/logotipo-de-apple.png" alt="">
                 Continuar con Apple
               </div>
-            </btn-secondary>-->
+            </btn-secondary>
           </div>
         </div>
       </div>
