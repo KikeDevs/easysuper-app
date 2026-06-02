@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, isPlatform, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter, IonModal
+  IonPage, IonContent, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter, IonModal
 } from "@ionic/vue";
+import { Capacitor } from "@capacitor/core";
 import InputContainer from "@/views/Components/InputContainer.vue";
 import InputCustom from "@/views/Components/InputCustom.vue";
 import { computed, ref } from "vue";
@@ -15,7 +16,7 @@ import { addUser } from "@/api/Register";
 import {useUiStore} from "@/stores/statusbar";
 import {loginWithGoogle, loginWithApple} from "@/api/Login";
 
-const isIos = computed(() => isPlatform('ios'));
+const isIos = Capacitor.getPlatform() === "ios";
 const router = useIonRouter();
 const ui = useUiStore();
 
