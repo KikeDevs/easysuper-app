@@ -95,7 +95,7 @@ export async function loginWithApple(): Promise<LoginResponse> {
             return { status: "error", message: "No se pudo obtener los datos de Apple." };
         }
 
-        const resp = await api.post<LoginResponse>("login-apple", {
+        const resp = await api.post<LoginResponse>("login-google", {
             email,
             username,
             device_name,
