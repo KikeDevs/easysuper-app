@@ -13,6 +13,10 @@ function openRegister (): void {
   ion.push('register');
 }
 
+function explorarSinCuenta (): void {
+  ion.push('/mapa');
+}
+
 </script>
 
 <template>
@@ -35,6 +39,12 @@ function openRegister (): void {
               Registrarse
             </div>
           </btn-secondary>
+          <button
+            class="w-full text-center text-sm underline opacity-60 py-2"
+            @click="explorarSinCuenta"
+          >
+            Explorar sin cuenta
+          </button>
         </div>
       </div>
     </ion-content>
