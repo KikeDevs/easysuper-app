@@ -21,6 +21,12 @@ workflows:
       - name: Install dependencies
         script: npm ci
 
+      - name: Create .env file
+        script: |
+          echo "VITE_GMAPS_IOS_KEY=$GOOGLE_MAPS_API_KEY" > .env
+          echo "VITE_GMAPS_ANDROID_KEY=$GOOGLE_MAPS_API_KEY" >> .env
+          echo "VITE_GMAPS_WEB_KEY=$GOOGLE_MAPS_API_KEY" >> .env
+
       - name: Build web app (Vue + Vite)
         script: npm run build
 
