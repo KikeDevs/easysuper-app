@@ -23,7 +23,7 @@
 	<key>GMSApiKey</key>
 	<string>AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI</string>
 	<key>GIDClientID</key>
-	<string>542553177675-ql4kq4ac5oul05vcf09g3kee0pqtq58v.apps.googleusercontent.com</string>
+	<string>44256859496-0q9c1gcfig96tio87a9cp7t1j4f3vaoa.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
@@ -75,7 +75,7 @@
             <string>google</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>com.googleusercontent.apps.542553177675-ql4kq4ac5oul05vcf09g3kee0pqtq58v</string>
+                <string>com.googleusercontent.apps.44256859496-0q9c1gcfig96tio87a9cp7t1j4f3vaoa</string>
             </array>
         </dict>
     </array>
