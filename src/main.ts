@@ -87,7 +87,10 @@ const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
 
 async function initSocialLogin(): Promise<void> {
     const WEB_CLIENT_ID = '44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com';
-    if (Capacitor.getPlatform() === "android" || Capacitor.getPlatform() === "ios") {
+    const platform = Capacitor.getPlatform();
+    if (platform !== "android" && platform !== "ios") return;
+
+    try {
         await SocialLogin.initialize({
             google: {
                 webClientId: WEB_CLIENT_ID,
@@ -95,6 +98,8 @@ async function initSocialLogin(): Promise<void> {
             },
             apple: {}
         });
+    } catch (e) {
+        console.warn("[SocialLogin] initialize error (non-fatal):", e);
     }
 }
 
@@ -164,5 +169,5 @@ async function handleIncomingUrl(url: string): Promise<void> {
     }
 }
 
-bootstrap();
+bootstrap().catch(e => console.error("[bootstrap] fatal:", e));
 initSocialLogin();
