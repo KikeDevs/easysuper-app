@@ -24,10 +24,10 @@ import { Promo } from "@/interfaces/promos";
 import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import { useRouter } from "vue-router";
 
-const GMAPS_KEY =
-    Capacitor.getPlatform() === "ios"
-        ? import.meta.env.VITE_GMAPS_IOS_KEY
-        : import.meta.env.VITE_GMAPS_ANDROID_KEY;
+const PLATFORM = Capacitor.getPlatform();
+const GMAPS_KEY = PLATFORM === "ios"
+    ? (import.meta.env.VITE_GMAPS_IOS_KEY || "AIzaSyCaIHwhE1vCIMfERvZx2IapbISpJAErMEI")
+    : (import.meta.env.VITE_GMAPS_ANDROID_KEY || "");
 
 const initialLoading = ref(false);
 const ui = useUiStore();
@@ -339,9 +339,16 @@ onIonViewDidEnter(async () => {
     makeBodyTransparent();
     await ui.refresh();
 
-    await nextTick(); // asegura DOM y layout listo
+    if (!GMAPS_KEY) {
+      showToast("API Key de Google Maps no disponible.");
+      return;
+    }
+
+    await nextTick();
+    await new Promise(r => setTimeout(r, 100)); // pequeño delay para asegurar inicialización nativa
     await createGoogleMap();
-  } catch {
+  } catch (e) {
+    console.error("[Mapa] error:", e);
     showToast("No se pudo inicializar el mapa.");
   } finally {
     initialLoading.value = false;
