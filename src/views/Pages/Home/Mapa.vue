@@ -102,12 +102,18 @@ async function createGoogleMap(): Promise<void> {
     throw new Error("mapEl null");
   }
 
-  // Asegura tamaño real antes de crear el mapa
-  const rect = mapEl.value.getBoundingClientRect();
-  if (rect.height < 50) {
-    mapEl.value.style.height = "100%";
-    mapEl.value.style.minHeight = "300px";
-  }
+  // Fuerza dimensiones explícitas en píxeles — requerido por capacitor-google-maps nativo
+  const screenW = window.innerWidth || document.documentElement.clientWidth || 375;
+  const screenH = window.innerHeight || document.documentElement.clientHeight || 667;
+  mapEl.value.style.position = "absolute";
+  mapEl.value.style.top = "0";
+  mapEl.value.style.left = "0";
+  mapEl.value.style.width = `${screenW}px`;
+  mapEl.value.style.height = `${screenH}px`;
+
+  // Espera a que el browser aplique las dimensiones
+  await nextTick();
+  await new Promise(r => setTimeout(r, 200));
 
   await Geolocation.requestPermissions().catch(() => {});
 
