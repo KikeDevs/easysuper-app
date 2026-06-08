@@ -86,6 +86,17 @@ const routes = [
         path: "/access/:token",
         name: "AccessLink",
         component: () => import('../views/Pages/AccessLink.vue'),
-    }
+    },
+    {
+        path: "/guest/listas",
+        name: "GuestListas",
+        component: () => import('../views/Pages/Guest/GuestListas.vue'),
+    },
+    {
+        path: "/guest/lista/:listId",
+        name: "GuestLista",
+        component: () => import('../views/Pages/Guest/GuestLista.vue'),
+        props: (route: any) => ({ listId: route.params.listId }),
+    },
 ];
 export default routes;

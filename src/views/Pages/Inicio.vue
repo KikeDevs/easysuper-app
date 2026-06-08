@@ -14,7 +14,7 @@ function openRegister (): void {
 }
 
 function explorarSinCuenta (): void {
-  ion.push('/ofertas');
+  ion.push('/guest/listas');
 }
 
 </script>
