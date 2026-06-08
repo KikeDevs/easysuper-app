@@ -7,6 +7,8 @@ import BtnSecondary from "@/views/Components/BtnSecondary.vue";
 import IconCustom from "@/views/Components/IconCustom.vue";
 import { useGuestStore } from "@/stores/guest";
 import { useUiStore } from "@/stores/statusbar";
+import { Geolocation } from "@capacitor/geolocation";
+import { Browser } from "@capacitor/browser";
 
 const router = useIonRouter();
 const ui = useUiStore();
@@ -28,12 +30,21 @@ function verLista(id: string) {
   router.push(`/guest/lista/${id}`);
 }
 
-function irLogin() {
-  router.push("/login");
-}
+function irLogin() { router.push("/login"); }
+function irRegister() { router.push("/register"); }
 
-function irRegister() {
-  router.push("/register");
+async function verSupermercados() {
+  try {
+    const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: false });
+    const { latitude, longitude } = pos.coords;
+    await Browser.open({
+      url: `https://www.google.com/maps/search/supermercados/@${latitude},${longitude},14z`
+    });
+  } catch {
+    await Browser.open({
+      url: "https://www.google.com/maps/search/supermercados"
+    });
+  }
 }
 </script>
 
@@ -58,6 +69,22 @@ function irRegister() {
           <p class="text-xs not-dark:text-blue-600 dark:text-blue-400">Crea una cuenta para guardar y sincronizar tus listas</p>
         </div>
         <icon-custom icon="angle-right" size="xl" class="not-dark:text-blue-500" />
+      </div>
+
+      <!-- Botón mapa -->
+      <div
+        class="w-full rounded-2xl p-4 mb-4 flex items-center gap-3 ion-activatable relative overflow-hidden not-dark:bg-white dark:bg-[#1e1e1e] shadow-sm"
+        @click="verSupermercados"
+      >
+        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+          <icon-custom icon="map-marker" size="xl" class="text-white" />
+        </div>
+        <div>
+          <p class="font-bold text-sm">Supermercados cercanos</p>
+          <p class="text-xs text-gray-400">Ver en Google Maps</p>
+        </div>
+        <icon-custom icon="angle-right" size="xl" class="ml-auto" />
+        <ion-ripple-effect />
       </div>
 
       <!-- Lista vacía -->
