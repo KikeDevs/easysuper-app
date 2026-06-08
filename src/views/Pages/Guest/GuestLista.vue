@@ -195,7 +195,7 @@ onIonViewDidEnter(async () => {
               :class="deptoSelect?.departament_id === d.departament_id ? 'bg-blue-500 text-white' : 'not-dark:bg-gray-100 dark:bg-[#2a2a2a]'"
               @click="deptoSelect = d; buscarProductos()"
             >
-              {{ d.departament }}
+              {{ d.name_departament }}
             </button>
           </div>
 
