@@ -136,9 +136,13 @@ async function loginApple(): Promise<void> {
       router.replace("/users");
       return;
     }
-    showToast(resp.message || "No se pudo iniciar sesión con Apple.", "Error");
+    const msg = resp.message ?? "";
+    if (msg.toLowerCase().includes("cancel") || msg.toLowerCase().includes("dismiss")) return;
+    showToast(msg || "No se pudo iniciar sesión con Apple.", "Error");
   } catch (e: any) {
-    showToast(e?.message || "Error inesperado en Apple Login.", "Error");
+    const msg: string = e?.message ?? "";
+    if (msg.toLowerCase().includes("cancel") || msg.toLowerCase().includes("dismiss")) return;
+    showToast(msg || "Error inesperado en Apple Login.", "Error");
   } finally {
     loading.value = false;
   }
@@ -148,22 +152,21 @@ async function loginGoogle(): Promise<void> {
   loading.value = true;
   try {
     const resp = await loginWithGoogle();
-    console.log("[loginGoogle] resp:", resp);
-
     if (resp.status === "ok") {
       if (resp.token && resp.user) {
         await useAuthStore().setSession(resp.token, resp.user);
       }
-      showToast("Sesión iniciada con Google.","Listo");
+      showToast("Sesión iniciada con Google.", "Listo");
       router.replace("/users");
       return;
     }
-
-    showToast(resp.message || "No se pudo iniciar sesión con Google.","Error");
+    const msg = resp.message ?? "";
+    if (msg.toLowerCase().includes("cancel") || msg.toLowerCase().includes("dismiss")) return;
+    showToast(msg || "No se pudo iniciar sesión con Google.", "Error");
   } catch (e: any) {
-    console.error("[loginGoogle] error:", e);
-    const msg = e?.message || "Error inesperado en Google Login.";
-    showToast(msg,"Error");
+    const msg: string = e?.message ?? "";
+    if (msg.toLowerCase().includes("cancel") || msg.toLowerCase().includes("dismiss")) return;
+    showToast(msg || "Error inesperado en Google Login.", "Error");
   } finally {
     loading.value = false;
   }
