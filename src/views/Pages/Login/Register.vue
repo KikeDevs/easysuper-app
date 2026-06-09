@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter, IonModal
+  IonPage, IonContent, IonHeader, IonBackButton, IonToast, onIonViewDidEnter, useIonRouter, IonModal, isPlatform
 } from "@ionic/vue";
 import { Capacitor } from "@capacitor/core";
 import InputContainer from "@/views/Components/InputContainer.vue";
@@ -17,6 +17,7 @@ import {useUiStore} from "@/stores/statusbar";
 import {loginWithGoogle, loginWithApple} from "@/api/Login";
 
 const isIos = Capacitor.getPlatform() === "ios";
+const isIpad = isPlatform("ipad");
 const router = useIonRouter();
 const ui = useUiStore();
 
@@ -260,7 +261,7 @@ onIonViewDidEnter(async () => {
               <div class="w-1/4 h-[2px] bg-orange-400"></div>
             </div>
 
-            <btn-secondary class="w-full mt-3" @click="loginGoogle">
+            <btn-secondary v-if="!isIpad" class="w-full mt-3" @click="loginGoogle">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/google.png" alt="">
                 Continuar con Google

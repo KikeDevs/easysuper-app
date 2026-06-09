@@ -4,6 +4,7 @@ import {
   IonToast, isPlatform, useIonRouter, IonHeader, onIonViewDidEnter, IonModal
 } from "@ionic/vue";
 import { Capacitor } from "@capacitor/core";
+const isIpad = isPlatform("ipad");
 import InputCustom from "@/views/Components/InputCustom.vue";
 import { computed, ref } from "vue";
 import BtnPrimary from "@/views/Components/BtnPrimary.vue";
@@ -230,7 +231,7 @@ onIonViewDidEnter(async ()=> {
               <div class="w-1/4 h-[2px] bg-orange-400"></div>
             </div>
 
-            <btn-secondary class="w-full mt-3" @click="loginGoogle">
+            <btn-secondary v-if="!isIpad" class="w-full mt-3" @click="loginGoogle">
               <div class="flex items-center gap-2 py-2">
                 <img class="w-6 h-6" src="/assets/images/login/google.png" alt="">
                 Continuar con Google
