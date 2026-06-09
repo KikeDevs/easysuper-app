@@ -33,6 +33,11 @@ workflows:
       - name: Capacitor sync iOS
         script: npx cap sync ios
 
+      - name: Force iPhone-only (remove iPad support)
+        script: |
+          sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2"/TARGETED_DEVICE_FAMILY = "1"/g' ios/App/App.xcodeproj/project.pbxproj
+          echo "TARGETED_DEVICE_FAMILY forced to 1 (iPhone only)"
+
       - name: Set build number
         script: |
           BUILD_NUMBER=$PROJECT_BUILD_NUMBER
@@ -81,7 +86,8 @@ workflows:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=FRTBXBGQ9G \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID"
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+            TARGETED_DEVICE_FAMILY=1
 
           # Paso 2: Crear export options
           cat > $EXPORT_PLIST << EOF
