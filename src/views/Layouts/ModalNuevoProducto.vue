@@ -24,6 +24,10 @@ const props = defineProps<{
   categorias: Departamento[],
 }>();
 
+const emit = defineEmits<{
+  (e: "created", payload: { nombre: string, categoriaId: number }): void;
+}>();
+
 const isOpen = defineModel<boolean>("is-open", { default: false });
 
 const ui = useUiStore();
@@ -89,6 +93,7 @@ async function guardarProducto(): Promise<void> {
 
     if (resp.status === "ok") {
       showToast(resp.message);
+      emit("created", { nombre, categoriaId: categoriaSelect.value.departament_id });
       resetForm();
       isOpen.value = false;
     } else  {
@@ -130,6 +135,20 @@ watch(isOpen, (open) => {
         <div class="flex flex-col gap-4">
           <div>
             <p class="text-sm mb-2 text-gray-500 dark:text-gray-300">
+              Nombre del producto
+            </p>
+
+            <input
+                v-model="productName"
+                type="text"
+                maxlength="100"
+                placeholder="Ej. Coca Cola 600 ml"
+                class="w-full rounded-2xl border border-gray-300 dark:border-white/10 px-3 py-3 bg-transparent focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <p class="text-sm mb-2 text-gray-500 dark:text-gray-300">
               Categoría
             </p>
 
@@ -156,20 +175,6 @@ watch(isOpen, (open) => {
                 <p>{{ c.name_departament }}</p>
               </div>
             </div>
-          </div>
-
-          <div>
-            <p class="text-sm mb-2 text-gray-500 dark:text-gray-300">
-              Nombre del producto
-            </p>
-
-            <input
-                v-model="productName"
-                type="text"
-                maxlength="100"
-                placeholder="Ej. Coca Cola 600 ml"
-                class="w-full rounded-2xl border border-gray-300 dark:border-white/10 px-3 py-3 bg-transparent focus:outline-none"
-            />
           </div>
 
           <div class="pt-2">

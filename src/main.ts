@@ -88,7 +88,7 @@ const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
 async function initSocialLogin(): Promise<void> {
     const WEB_CLIENT_ID = '44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com';
     const platform = Capacitor.getPlatform();
-    if (platform !== "android" && platform !== "ios") return;
+    if (platform !== "android" && platform !== "ios" && platform !== "web") return;
 
     try {
         await SocialLogin.initialize({

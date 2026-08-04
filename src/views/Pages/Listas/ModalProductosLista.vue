@@ -350,6 +350,20 @@ function openNuevoProducto(): void {
   modalNuevoProducto.value = true;
 }
 
+async function onProductoCreado(payload: { nombre: string, categoriaId: number }): Promise<void> {
+  // busca el producto recién creado en su categoría y lo agrega directo a esta lista
+  const resp = await getProducts(payload.categoriaId, payload.nombre);
+  if (resp.status !== "ok") return;
+
+  const nombreNorm = payload.nombre.trim().toLowerCase();
+  const match = (resp.products ?? []).find(
+      p => (p.name_product ?? "").trim().toLowerCase() === nombreNorm
+  );
+  if (!match) return;
+
+  await agregarProducto(match);
+}
+
 
 watch(isOpen, async (open) => {
   if (open) {
@@ -615,6 +629,7 @@ watch(isOpen, async (open) => {
     <modal-nuevo-producto
         v-model:is-open="modalNuevoProducto"
         :categorias="departamentos"
+        @created="onProductoCreado"
     />
 
     <loader-normal :open="initialLoading"/>

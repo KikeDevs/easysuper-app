@@ -35,3 +35,10 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+
+# Credenciales de firma iOS - NUNCA subir al repo
+*.p12
+*.cer
+*.mobileprovision
+p12_base64.txt
+profile_base64.txt
