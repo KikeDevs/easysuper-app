@@ -42,3 +42,8 @@ npm-debug.log*
 *.mobileprovision
 p12_base64.txt
 profile_base64.txt
+
+# Credenciales de firma Android - NUNCA subir al repo
+*.jks
+upload_certificate.pem
+key.properties
