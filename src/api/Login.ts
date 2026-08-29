@@ -2,6 +2,7 @@ import {LoginResponse} from "@/interfaces/types";
 import {getDeviceName} from "@/utils/getDevice";
 import {api} from "@/services/api";
 import {SocialLogin} from "@capgo/capacitor-social-login";
+import {socialLoginReady} from "@/services/socialLogin";
 
 export async function logUser(map: {
     email: string,
@@ -26,6 +27,7 @@ export async function logUser(map: {
 
 export async function loginWithGoogle(): Promise<LoginResponse> {
     try {
+        await socialLoginReady;
         const device_name = await getDeviceName();
         const loginResult = await SocialLogin.login({
             provider: "google",
@@ -79,6 +81,7 @@ export async function loginWithGoogle(): Promise<LoginResponse> {
 
 export async function loginWithApple(): Promise<LoginResponse> {
     try {
+        await socialLoginReady;
         const device_name = await getDeviceName();
         const loginResult = await SocialLogin.login({
             provider: "apple",

@@ -60,13 +60,8 @@ const emit = defineEmits<{
       <ion-list lines="none">
         <item-custom icon="shopping-cart" size="xl" title="Iniciar Compra" @click="emit('compra')"/>
         <item-custom icon="share" size="xl" title="Compartir Lista" @click="emit('compartir')"/>
-        <item-custom icon="trash" size="xl" title="Eliminar Lista"
-                     :disabled="item.name_list === 'Hogar' || item.name_list === 'Oficina'"
-                     class="disabled:opacity-40" @click="emit('eliminar')"/>
-        <item-custom icon="pencil" size="xl" title="Editar Lista" @click="emit('editar')"
-                     :disabled="item.name_list === 'Hogar' || item.name_list === 'Oficina'"
-                     class="disabled:opacity-40"
-        />
+        <item-custom icon="trash" size="xl" title="Eliminar Lista" @click="emit('eliminar')"/>
+        <item-custom icon="pencil" size="xl" title="Editar Lista" @click="emit('editar')"/>
       </ion-list>
 
     </ion-content>

@@ -30,7 +30,7 @@ import '@ionic/vue/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 import {Capacitor} from "@capacitor/core";
-import {SocialLogin} from "@capgo/capacitor-social-login";
+import "@/services/socialLogin";
 import {useProfileStore} from "@/stores/profile";
 import RootApp from "./App.vue";
 import {App as CapacitorApp} from "@capacitor/app"
@@ -84,24 +84,6 @@ const whatsappSlide = (_baseEl: HTMLElement, opts: any): Animation => {
 
     return root;
 };
-
-async function initSocialLogin(): Promise<void> {
-    const WEB_CLIENT_ID = '44256859496-mfvhts1qaha2o9pmc8f6vhge2bjp4bmi.apps.googleusercontent.com';
-    const platform = Capacitor.getPlatform();
-    if (platform !== "android" && platform !== "ios" && platform !== "web") return;
-
-    try {
-        await SocialLogin.initialize({
-            google: {
-                webClientId: WEB_CLIENT_ID,
-                mode: 'online'
-            },
-            apple: {}
-        });
-    } catch (e) {
-        console.warn("[SocialLogin] initialize error (non-fatal):", e);
-    }
-}
 
 async function bootstrap() {
     const isAndroid = Capacitor.getPlatform() === "android";
@@ -170,4 +152,3 @@ async function handleIncomingUrl(url: string): Promise<void> {
 }
 
 bootstrap().catch(e => console.error("[bootstrap] fatal:", e));
-initSocialLogin();
