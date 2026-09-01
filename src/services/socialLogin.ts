@@ -11,7 +11,11 @@ async function initSocialLogin(): Promise<void> {
         await SocialLogin.initialize({
             google: {
                 webClientId: WEB_CLIENT_ID,
-                mode: 'online'
+                mode: 'online',
+                // Fija el redirect_uri en web a la raíz del sitio, en vez de la página
+                // actual (window.location.pathname), para que solo haya que autorizar
+                // una URL en Google Cloud Console en lugar de una por cada ruta.
+                ...(platform === 'web' ? { redirectUrl: window.location.origin + '/' } : {})
             },
             apple: {}
         });
